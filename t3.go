@@ -18,13 +18,13 @@ const (
 type T3Game struct {
 	currentState GameState
 	board        *T3Board
-	p1           <-chan T3Move
-	p2           <-chan T3Move
+	p1           *T3Player
+	p2           *T3Player
 	// 0 = cats game, 0 > is player ID
 	winner int
 }
 
-func NewT3Game(player1 <-chan T3Move, player2 <-chan T3Move) *T3Game {
+func NewT3Game(player1 *T3Player, player2 *T3Player) *T3Game {
 	return &T3Game{
 		currentState: GameStatePreStart,
 		board:        NewT3Board(),
@@ -67,21 +67,20 @@ func (t *T3Game) Step(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (t *T3Game) doPlayerTurn(ctx context.Context, side int, input <-chan T3Move) error {
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case move := <-input:
-		move.Player = side
-		occupied, err := t.board.place(move)
-		if err != nil {
-			return err
-		}
-		if occupied { //todo: figure out how to handle bad plays...giving up turn sufficient?
-
-		}
-		return nil
+func (t *T3Game) doPlayerTurn(ctx context.Context, side int, input *T3Player) error {
+	move, err := input.NextPlay(ctx)
+	if err != nil {
+		return err
 	}
+	move.Player = side
+	occupied, err := t.board.place(move)
+	if err != nil {
+		return err
+	}
+	if occupied { //todo: figure out how to handle bad plays...giving up turn sufficient?
+
+	}
+	return nil
 }
 
 var UnhandledGameState = errors.New("unhandled game state")

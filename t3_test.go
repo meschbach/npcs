@@ -18,7 +18,7 @@ func TestT3Game(t *testing.T) {
 	player2In <- T3Move{Row: 0, Column: 1}
 	player2In <- T3Move{Row: 1, Column: 1}
 
-	game := NewT3Game(player1In, player2In)
+	game := NewT3Game(NewT3Player(player1In), NewT3Player(player2In))
 
 	t.Run("When asked complete 4 turns", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
