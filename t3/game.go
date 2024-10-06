@@ -14,26 +14,26 @@ const (
 	GateStateConcluded
 )
 
-// T3Game is a variation of Tic-Tac-Toe.
-type T3Game struct {
+// Game is a variation of Tic-Tac-Toe.
+type Game struct {
 	currentState GameState
-	board        *T3Board
-	p1           *T3Player
-	p2           *T3Player
+	board        *Board
+	p1           *Player
+	p2           *Player
 	// 0 = cats game, 0 > is player ID
 	winner int
 }
 
-func NewT3Game(player1 *T3Player, player2 *T3Player) *T3Game {
-	return &T3Game{
+func NewGame(player1 *Player, player2 *Player) *Game {
+	return &Game{
 		currentState: GameStatePreStart,
-		board:        NewT3Board(),
+		board:        NewBoard(),
 		p1:           player1,
 		p2:           player2,
 	}
 }
 
-func (t *T3Game) Step(ctx context.Context) (bool, error) {
+func (t *Game) Step(ctx context.Context) (bool, error) {
 	switch t.currentState {
 	case GameStatePreStart:
 		t.currentState = GameStatePlayer1Turn
@@ -67,7 +67,7 @@ func (t *T3Game) Step(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (t *T3Game) doPlayerTurn(ctx context.Context, side int, input *T3Player) error {
+func (t *Game) doPlayerTurn(ctx context.Context, side int, input *Player) error {
 	move, err := input.NextPlay(ctx)
 	if err != nil {
 		return err

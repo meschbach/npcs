@@ -2,33 +2,33 @@ package t3
 
 import "errors"
 
-type T3Move struct {
+type Move struct {
 	Player int
 	Row    int
 	Column int
 }
 
-type T3Board struct {
+type Board struct {
 	cells      [][]int
 	maxRows    int
 	maxColumns int
 }
 
-func NewT3Board() *T3Board {
+func NewBoard() *Board {
 	rows := 3
 	columns := 3
 	board := make([][]int, rows)
 	for i := range board {
 		board[i] = make([]int, columns)
 	}
-	return &T3Board{
+	return &Board{
 		cells:      board,
 		maxRows:    3,
 		maxColumns: 3,
 	}
 }
 
-func (t *T3Board) place(where T3Move) (occupied bool, err error) {
+func (t *Board) place(where Move) (occupied bool, err error) {
 	if where.Row > t.maxRows {
 		return false, errors.New("out of range")
 	}
@@ -47,7 +47,7 @@ func (t *T3Board) place(where T3Move) (occupied bool, err error) {
 	return false, nil
 }
 
-func (t *T3Board) completed(player int) bool {
+func (t *Board) completed(player int) bool {
 	if t.rowWin(player) {
 		return true
 	}
@@ -62,7 +62,7 @@ func (t *T3Board) completed(player int) bool {
 	return t.forwardSlashWin(player)
 }
 
-func (t *T3Board) rowWin(player int) bool {
+func (t *Board) rowWin(player int) bool {
 	for _, row := range t.cells {
 		runCount := 0
 		for _, cell := range row {
@@ -78,7 +78,7 @@ func (t *T3Board) rowWin(player int) bool {
 	return false
 }
 
-func (t *T3Board) forwardSlashWin(player int) bool {
+func (t *Board) forwardSlashWin(player int) bool {
 	for index := 0; index < t.maxColumns; index++ {
 		row := t.maxRows - index - 1
 		column := index
@@ -89,7 +89,7 @@ func (t *T3Board) forwardSlashWin(player int) bool {
 	return true
 }
 
-func (t *T3Board) backSlashWin(player int) bool {
+func (t *Board) backSlashWin(player int) bool {
 	runCount := 0
 	for index := 0; index < t.maxRows; index++ {
 		if t.cells[index][index] != player {
@@ -100,7 +100,7 @@ func (t *T3Board) backSlashWin(player int) bool {
 	return runCount == t.maxRows
 }
 
-func (t *T3Board) columnWin(player int) bool {
+func (t *Board) columnWin(player int) bool {
 	for columnIndex := 0; columnIndex < t.maxColumns; columnIndex++ {
 		runCount := 0
 		for _, row := range t.cells {

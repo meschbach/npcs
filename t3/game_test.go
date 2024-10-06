@@ -8,17 +8,17 @@ import (
 	"time"
 )
 
-func TestT3Game(t *testing.T) {
-	player1In := make(chan T3Move, 9)
-	player1In <- T3Move{Row: 0, Column: 0}
-	player1In <- T3Move{Row: 1, Column: 0}
-	player1In <- T3Move{Row: 2, Column: 0}
+func TestGame(t *testing.T) {
+	player1In := make(chan Move, 9)
+	player1In <- Move{Row: 0, Column: 0}
+	player1In <- Move{Row: 1, Column: 0}
+	player1In <- Move{Row: 2, Column: 0}
 
-	player2In := make(chan T3Move, 9)
-	player2In <- T3Move{Row: 0, Column: 1}
-	player2In <- T3Move{Row: 1, Column: 1}
+	player2In := make(chan Move, 9)
+	player2In <- Move{Row: 0, Column: 1}
+	player2In <- Move{Row: 1, Column: 1}
 
-	game := NewT3Game(NewT3Player(player1In), NewT3Player(player2In))
+	game := NewGame(NewPlayer(player1In), NewPlayer(player2In))
 
 	t.Run("When asked complete 4 turns", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
