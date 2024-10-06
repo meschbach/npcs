@@ -1,4 +1,4 @@
-package npcs
+package t3
 
 import (
 	"github.com/stretchr/testify/assert"
