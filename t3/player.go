@@ -7,21 +7,25 @@ import (
 
 var PlayerDisconnected = errors.New("player disconnected")
 
-type Player struct {
-	input <-chan Move
-	//I got ahead of myself
-	//output chan<- Move
+type Player interface {
+	NextPlay(ctx context.Context) (Move, error)
+	PushHistory(ctx context.Context, move Move) error
 }
 
-func NewPlayer(input <-chan Move) *Player {
+type ChanPlayer struct {
+	input  <-chan Move
+	output chan<- Move
+}
+
+func NewPlayer(input <-chan Move) *ChanPlayer {
 	//outputs := make(chan Move, 8)
-	return &Player{
+	return &ChanPlayer{
 		input: input,
 		//output: outputs,
 	}
 }
 
-func (t *Player) NextPlay(ctx context.Context) (Move, error) {
+func (t *ChanPlayer) NextPlay(ctx context.Context) (Move, error) {
 	select {
 	case <-ctx.Done():
 		return Move{}, errors.Join(ctx.Err(), PlayerDisconnected)
@@ -30,11 +34,14 @@ func (t *Player) NextPlay(ctx context.Context) (Move, error) {
 	}
 }
 
-//func (t *Player) PushHistory(ctx context.Context, move Move) error {
-//	select {
-//	case <-ctx.Done():
-//		return errors.Join(ctx.Err(), PlayerDisconnected)
-//	case t.output <- move:
-//		return nil
-//	}
-//}
+func (t *ChanPlayer) PushHistory(ctx context.Context, move Move) error {
+	if t.output == nil {
+		return nil
+	}
+	select {
+	case <-ctx.Done():
+		return errors.Join(ctx.Err(), PlayerDisconnected)
+	case t.output <- move:
+		return nil
+	}
+}

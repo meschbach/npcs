@@ -18,13 +18,13 @@ const (
 type Game struct {
 	currentState GameState
 	board        *Board
-	p1           *Player
-	p2           *Player
+	p1           Player
+	p2           Player
 	// 0 = cats game, 0 > is player ID
 	winner int
 }
 
-func NewGame(player1 *Player, player2 *Player) *Game {
+func NewGame(player1 Player, player2 Player) *Game {
 	return &Game{
 		currentState: GameStatePreStart,
 		board:        NewBoard(),
@@ -33,41 +33,51 @@ func NewGame(player1 *Player, player2 *Player) *Game {
 	}
 }
 
-func (t *Game) Step(ctx context.Context) (bool, error) {
+func (t *Game) Step(ctx context.Context) error {
 	switch t.currentState {
 	case GameStatePreStart:
 		t.currentState = GameStatePlayer1Turn
+		return nil
 	case GameStatePlayer1Turn:
 		if err := t.doPlayerTurn(ctx, 1, t.p1); err != nil {
-			return true, err
+			return &PlayerError{
+				WhichPlayer: 1,
+				Performing:  "turn",
+				Underlying:  err,
+			}
 		}
 		if t.board.completed(1) {
 			t.currentState = GateStateConcluded
 			t.winner = 1
-			return false, nil
 		} else {
 			t.currentState = GameStatePlayer2Turn
 		}
 	case GameStatePlayer2Turn:
 		if err := t.doPlayerTurn(ctx, 2, t.p2); err != nil {
-			return true, err
+			return &PlayerError{
+				WhichPlayer: 2,
+				Performing:  "turn",
+				Underlying:  err,
+			}
 		}
 		if t.board.completed(2) {
 			t.currentState = GateStateConcluded
 			t.winner = 2
-			return false, nil
 		} else {
 			t.currentState = GameStatePlayer1Turn
 		}
 	case GateStateConcluded:
-		return false, nil
 	default:
-		return false, UnhandledGameState
+		return UnhandledGameState
 	}
-	return true, nil
+	return nil
 }
 
-func (t *Game) doPlayerTurn(ctx context.Context, side int, input *Player) error {
+func (t *Game) Concluded() bool {
+	return t.currentState == GateStateConcluded
+}
+
+func (t *Game) doPlayerTurn(ctx context.Context, side int, input Player) error {
 	move, err := input.NextPlay(ctx)
 	if err != nil {
 		return err
@@ -81,6 +91,15 @@ func (t *Game) doPlayerTurn(ctx context.Context, side int, input *Player) error 
 
 	}
 	return nil
+}
+
+func (t *Game) Result() (concluded bool, winner int) {
+	switch t.currentState {
+	case GateStateConcluded:
+		return true, t.winner
+	default:
+		return false, 0
+	}
 }
 
 var UnhandledGameState = errors.New("unhandled game state")

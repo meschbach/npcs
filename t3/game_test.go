@@ -25,15 +25,13 @@ func TestGame(t *testing.T) {
 		t.Cleanup(cancel)
 
 		for moves := 4; moves >= 0; moves-- {
-			stillPlaying, err := game.Step(ctx)
-			require.NoError(t, err)
-			assert.True(t, stillPlaying, "still playing")
+			require.NoError(t, game.Step(ctx))
+			assert.False(t, game.Concluded(), "still playing")
 		}
 
 		t.Run("Then the last turn marks the game as complete", func(t *testing.T) {
-			stillPlaying, err := game.Step(ctx)
-			require.NoError(t, err)
-			assert.False(t, stillPlaying, "game should have completed")
+			require.NoError(t, game.Step(ctx))
+			assert.True(t, game.Concluded(), "game should have completed")
 			assert.Equal(t, 1, game.winner)
 		})
 	})

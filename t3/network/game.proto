@@ -1,0 +1,46 @@
+syntax = "proto3";
+option go_package = "t3/network";
+
+service T3 {
+  rpc startGame(StartGameIn) returns (StartGameOut);
+  rpc moveMade(MoveMadeIn) returns (MoveMadeOut);
+  rpc nextMove(NextMoveIn) returns (NextMoveOut);
+  rpc concluded(ConclusionIn) returns (ConclusionOut);
+}
+
+message StartGameIn {
+  int64 yourPlayer = 1;
+}
+
+message StartGameOut {
+  int64 gameID = 1;
+}
+
+message MoveMadeIn {
+  int64 player = 1;
+  int64 row = 2;
+  int64 column = 3;
+  int64 gameID = 4;
+}
+
+message MoveMadeOut {
+}
+
+message NextMoveIn {
+  int64 gameID = 1;
+}
+
+message NextMoveOut {
+  int64 row = 2;
+  int64 column = 3;
+}
+
+message ConclusionIn {
+  int64 gameID = 1;
+  bool stalemate = 2;
+  int64 winner = 3;
+  bool withdraw = 4;
+}
+
+message ConclusionOut {
+}

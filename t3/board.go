@@ -29,11 +29,21 @@ func NewBoard() *Board {
 }
 
 func (t *Board) place(where Move) (occupied bool, err error) {
-	if where.Row > t.maxRows {
-		return false, errors.New("out of range")
+	if where.Row >= t.maxRows {
+		return false, &OffBoardError{
+			To:         where,
+			MaxRows:    t.maxRows,
+			MaxColumns: t.maxColumns,
+			Reason:     "row",
+		}
 	}
-	if where.Column > t.maxColumns {
-		return false, errors.New("out of range")
+	if where.Column >= t.maxColumns {
+		return false, &OffBoardError{
+			To:         where,
+			MaxRows:    t.maxRows,
+			MaxColumns: t.maxColumns,
+			Reason:     "column",
+		}
 	}
 	if where.Player == 0 {
 		return false, errors.New("side 0 is reserved")
