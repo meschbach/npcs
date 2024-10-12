@@ -28,22 +28,9 @@ func NewBoard() *Board {
 	}
 }
 
-func (t *Board) place(where Move) (occupied bool, err error) {
-	if where.Row >= t.maxRows {
-		return false, &OffBoardError{
-			To:         where,
-			MaxRows:    t.maxRows,
-			MaxColumns: t.maxColumns,
-			Reason:     "row",
-		}
-	}
-	if where.Column >= t.maxColumns {
-		return false, &OffBoardError{
-			To:         where,
-			MaxRows:    t.maxRows,
-			MaxColumns: t.maxColumns,
-			Reason:     "column",
-		}
+func (t *Board) Place(where Move) (occupied bool, err error) {
+	if err := t.validOrError(where); err != nil {
+		return false, err
 	}
 	if where.Player == 0 {
 		return false, errors.New("side 0 is reserved")
@@ -55,6 +42,33 @@ func (t *Board) place(where Move) (occupied bool, err error) {
 	}
 	t.cells[where.Row][where.Column] = where.Player
 	return false, nil
+}
+
+func (t *Board) validOrError(where Move) error {
+	if where.Row >= t.maxRows {
+		return &OffBoardError{
+			To:         where,
+			MaxRows:    t.maxRows,
+			MaxColumns: t.maxColumns,
+			Reason:     "row",
+		}
+	}
+	if where.Column >= t.maxColumns {
+		return &OffBoardError{
+			To:         where,
+			MaxRows:    t.maxRows,
+			MaxColumns: t.maxColumns,
+			Reason:     "column",
+		}
+	}
+	return nil
+}
+
+func (t *Board) Occupied(where Move) (player int, err error) {
+	if err := t.validOrError(where); err != nil {
+		return 0, err
+	}
+	return t.cells[where.Row][where.Column], nil
 }
 
 func (t *Board) completed(player int) bool {

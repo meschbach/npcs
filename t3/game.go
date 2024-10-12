@@ -40,11 +40,7 @@ func (t *Game) Step(ctx context.Context) error {
 		return nil
 	case GameStatePlayer1Turn:
 		if err := t.doPlayerTurn(ctx, 1, t.p1); err != nil {
-			return &PlayerError{
-				WhichPlayer: 1,
-				Performing:  "turn",
-				Underlying:  err,
-			}
+			return err
 		}
 		if t.board.completed(1) {
 			t.currentState = GateStateConcluded
@@ -54,11 +50,7 @@ func (t *Game) Step(ctx context.Context) error {
 		}
 	case GameStatePlayer2Turn:
 		if err := t.doPlayerTurn(ctx, 2, t.p2); err != nil {
-			return &PlayerError{
-				WhichPlayer: 2,
-				Performing:  "turn",
-				Underlying:  err,
-			}
+			return err
 		}
 		if t.board.completed(2) {
 			t.currentState = GateStateConcluded
@@ -80,17 +72,27 @@ func (t *Game) Concluded() bool {
 func (t *Game) doPlayerTurn(ctx context.Context, side int, input Player) error {
 	move, err := input.NextPlay(ctx)
 	if err != nil {
-		return err
+		return &PlayerError{
+			WhichPlayer: side,
+			Performing:  "requesting next play",
+			Underlying:  err,
+		}
 	}
 	move.Player = side
-	occupied, err := t.board.place(move)
+	occupied, err := t.board.Place(move)
 	if err != nil {
-		return err
+		return &PlayerError{
+			WhichPlayer: side,
+			Performing:  "placing",
+			Underlying:  err,
+		}
 	}
 	if occupied { //todo: figure out how to handle bad plays...giving up turn sufficient?
 
 	}
-	return nil
+	p1Err := t.p1.PushHistory(ctx, move)
+	p2Err := t.p2.PushHistory(ctx, move)
+	return errors.Join(p1Err, p2Err)
 }
 
 func (t *Game) Result() (concluded bool, winner int) {

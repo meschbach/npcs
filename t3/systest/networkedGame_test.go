@@ -40,34 +40,6 @@ func (s *ScriptedPlayer) Done(ctx context.Context) error {
 	return nil
 }
 
-type remotePlayer struct {
-	wire   network.T3Client
-	gameID int64
-}
-
-func (r *remotePlayer) NextPlay(ctx context.Context) (t3.Move, error) {
-	reply, err := r.wire.NextMove(ctx, &network.NextMoveIn{
-		GameID: r.gameID,
-	})
-	if err != nil {
-		return t3.Move{}, err
-	}
-	return t3.Move{
-		Row:    int(reply.Row),
-		Column: int(reply.Column),
-	}, nil
-}
-
-func (r *remotePlayer) PushHistory(ctx context.Context, move t3.Move) error {
-	_, err := r.wire.MoveMade(ctx, &network.MoveMadeIn{
-		Player: int64(move.Player),
-		Row:    int64(move.Row),
-		Column: int64(move.Column),
-		GameID: r.gameID,
-	})
-	return err
-}
-
 func TestNetworkedGame(t *testing.T) {
 	ctx, done := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	t.Cleanup(done)
@@ -90,7 +62,7 @@ func TestNetworkedGame(t *testing.T) {
 		defer dequeueLock.Unlock()
 
 		var nextPlayer network.Session
-		nextPlayer, players = players[0], players[1:]
+		nextPlayer, players = unshiftSlice(players)
 		return nextPlayer, nil
 	})
 
@@ -113,21 +85,13 @@ func TestNetworkedGame(t *testing.T) {
 	})
 
 	client := network.NewT3Client(c)
-	firstPlayerStart, err := client.StartGame(ctx, &network.StartGameIn{YourPlayer: 1})
-	require.NoError(t, err)
-	assert.NotNil(t, firstPlayerStart)
 
-	secondPlayerStart, err := client.StartGame(ctx, &network.StartGameIn{YourPlayer: 2})
+	p1, err := network.NewRemotePlayer(ctx, client, 1)
 	require.NoError(t, err)
-	assert.NotNil(t, secondPlayerStart)
+	p2, err := network.NewRemotePlayer(ctx, client, 2)
+	require.NoError(t, err)
 
-	game := t3.NewGame(&remotePlayer{
-		wire:   client,
-		gameID: firstPlayerStart.GameID,
-	}, &remotePlayer{
-		wire:   client,
-		gameID: secondPlayerStart.GameID,
-	})
+	game := t3.NewGame(p1, p2)
 	for !game.Concluded() {
 		require.NoError(t, game.Step(ctx))
 	}
@@ -135,4 +99,15 @@ func TestNetworkedGame(t *testing.T) {
 	finished, winner := game.Result()
 	assert.True(t, finished)
 	assert.Equal(t, 1, winner)
+}
+
+func unshiftSlice[T any](in []T) (out T, remainder []T) {
+	count := len(in)
+	if count == 0 {
+		return out, remainder
+	} else if count == 1 {
+		return in[0], nil
+	} else {
+		return in[0], in[1:]
+	}
 }

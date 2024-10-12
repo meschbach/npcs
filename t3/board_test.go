@@ -16,7 +16,7 @@ func TestBoard(t *testing.T) {
 	t.Run("Given player 1 has the first row", func(t *testing.T) {
 		b := NewBoard()
 		for index := 0; index < 3; index++ {
-			_, err := b.place(Move{Player: 1, Row: 0, Column: index})
+			_, err := b.Place(Move{Player: 1, Row: 0, Column: index})
 			require.NoError(t, err)
 		}
 		assert.True(t, b.completed(1))
@@ -25,7 +25,7 @@ func TestBoard(t *testing.T) {
 	t.Run("Given player 2 has the 2nd column", func(t *testing.T) {
 		b := NewBoard()
 		for index := 0; index < 3; index++ {
-			_, err := b.place(Move{Player: 2, Row: index, Column: 1})
+			_, err := b.Place(Move{Player: 2, Row: index, Column: 1})
 			require.NoError(t, err)
 		}
 		assert.True(t, b.completed(2))
@@ -34,7 +34,7 @@ func TestBoard(t *testing.T) {
 	t.Run("Given player 3 has a diagonal top lef to bottom right", func(t *testing.T) {
 		b := NewBoard()
 		for index := 0; index < 3; index++ {
-			blocked, err := b.place(Move{Player: 3, Row: index, Column: index})
+			blocked, err := b.Place(Move{Player: 3, Row: index, Column: index})
 			assert.False(t, blocked)
 			require.NoError(t, err)
 		}
@@ -43,7 +43,7 @@ func TestBoard(t *testing.T) {
 	t.Run("Given player 4 has a diagonal bottom left to top right", func(t *testing.T) {
 		b := NewBoard()
 		for index := 0; index < 3; index++ {
-			blocked, err := b.place(Move{Player: 4, Row: 2 - index, Column: index})
+			blocked, err := b.Place(Move{Player: 4, Row: 2 - index, Column: index})
 			assert.False(t, blocked)
 			require.NoError(t, err)
 		}
