@@ -47,7 +47,7 @@ func RunGame(ctx context.Context, serviceURL string) (err error) {
 
 func RunFillIn(ctx context.Context) (err error) {
 	bot := bots.NewFillInBot()
-	human := &simple{player: 2}
+	human := &simple{player: 2, board: t3.NewBoard()}
 
 	game := t3.NewGame(network.WithLocalSession(bot), human)
 	for !game.Concluded() {
@@ -55,8 +55,7 @@ func RunFillIn(ctx context.Context) (err error) {
 			return err
 		}
 	}
-	fmt.Printf("Game concluded.\n")
 	_, winner := game.Result()
-	fmt.Printf("Winning player: %d\n", winner)
+	human.concludedGame(winner)
 	return nil
 }
