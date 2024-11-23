@@ -2,22 +2,17 @@ package systest
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"github.com/go-faker/faker/v4"
 	"github.com/google/uuid"
-	"github.com/madflojo/testcerts"
-	"github.com/meschbach/npcs/junk/inProc"
 	"github.com/meschbach/npcs/t3"
 	"github.com/meschbach/npcs/t3/bots"
 	"github.com/meschbach/npcs/t3/network"
 	"github.com/stretchr/testify/require"
+	"github.com/thejerf/suture/v4"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/oauth"
-	"google.golang.org/grpc/resolver"
-	"google.golang.org/grpc/resolver/manual"
 	"sync"
 	"testing"
 	"time"
@@ -29,42 +24,23 @@ func TestPushGame(t *testing.T) {
 
 	gateway := network.NewPush()
 
-	net := inProc.NewNetwork()
-	l, err := net.Listen(ctx, "push.npcs:54321")
-	require.NoError(t, err)
+	net := NewTestGRPCLayer(t)
+	physSrv := net.SpawnService(ctx, "push.npcs:54321", func(ctx context.Context, srv *grpc.Server) error {
+		network.RegisterT3PushServer(srv, gateway)
+		return nil
+	})
 
-	ca := testcerts.NewCA()
-	service, err := ca.NewKeyPair("push.npcs")
-	require.NoError(t, err)
-
-	// spawn and register service
-	cfg, err := service.ConfigureTLSConfig(&tls.Config{})
-	require.NoError(t, err)
-	s := grpc.NewServer(grpc.Creds(credentials.NewTLS(cfg)))
-	network.RegisterT3PushServer(s, gateway)
-
-	go func() {
-		s.Serve(l)
-		//todo: track the resulting error
-		//err := s.Serve(l)
-		//require.NoError(t, err)
-	}()
+	serviceContext, serviceContextDone := context.WithCancel(ctx)
+	supervisor := suture.NewSimple("test")
+	supervisor.Add(physSrv)
+	supervisorResult := supervisor.ServeBackground(serviceContext)
 	t.Cleanup(func() {
-		require.NoError(t, l.Close())
+		serviceContextDone()
+		select {
+		case err := <-supervisorResult:
+			require.NotNil(t, err)
+		}
 	})
-
-	//build grpc client stuff
-	grpcDiscovery := manual.NewBuilderWithScheme("in-proc")
-	grpcDiscovery.InitialState(resolver.State{
-		Addresses: []resolver.Address{
-			{Addr: "push.npcs:54321", ServerName: "push.npcs"},
-		},
-	})
-	grpcClientOpts := []grpc.DialOption{
-		grpc.WithResolvers(grpcDiscovery),
-		grpc.WithContextDialer(net.Dial),
-		grpc.WithTransportCredentials(credentials.NewTLS(ca.GenerateTLSConfig())),
-	}
 
 	// configure game clients
 	player1Token := faker.Jwt()
@@ -88,10 +64,8 @@ func TestPushGame(t *testing.T) {
 		defer done()
 
 		fillIn := bots.NewFillInBot()
-		optsCopy := make([]grpc.DialOption, len(grpcClientOpts))
-		copy(optsCopy, grpcClientOpts)
 		creds := oauth.TokenSource{TokenSource: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: player1Token})}
-		player1Opts := append(optsCopy, grpc.WithPerRPCCredentials(creds))
+		player1Opts := append(net.ConnectOptions(), grpc.WithPerRPCCredentials(creds))
 		outgoing := network.NewPushClient("in-proc://push.npcs:54321", player1GameID.String(), player1Token, fillIn, player1Opts...)
 		require.NoError(t, outgoing.Serve(playerCtx))
 	}()
@@ -104,10 +78,8 @@ func TestPushGame(t *testing.T) {
 			Row:    0,
 			Column: 2,
 		})
-		optsCopy := make([]grpc.DialOption, len(grpcClientOpts))
-		copy(optsCopy, grpcClientOpts)
 		creds := oauth.TokenSource{TokenSource: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: player2Token})}
-		player2Opts := append(optsCopy, grpc.WithPerRPCCredentials(creds))
+		player2Opts := append(net.ConnectOptions(), grpc.WithPerRPCCredentials(creds))
 		outgoing := network.NewPushClient("in-proc://push.npcs:54321", player2GameID.String(), player2Token, columnFiller, player2Opts...)
 		require.NoError(t, outgoing.Serve(playerCtx))
 	}()
