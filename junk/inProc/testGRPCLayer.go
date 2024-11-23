@@ -1,4 +1,4 @@
-package systest
+package inProc
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/madflojo/testcerts"
-	"github.com/meschbach/npcs/junk/inProc"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -20,7 +19,7 @@ import (
 
 type TestGRPCLayer struct {
 	t                 *testing.T
-	physicalTransport *inProc.Network
+	physicalTransport *Network
 	publicKeyInfra    *testcerts.CertificateAuthority
 
 	//todo: resolver is a mess in terms of initial seeds versus actual.  might be better to build out a custom binding
@@ -34,7 +33,7 @@ func NewTestGRPCLayer(t *testing.T) *TestGRPCLayer {
 	return &TestGRPCLayer{
 		t:                 t,
 		publicKeyInfra:    testcerts.NewCA(),
-		physicalTransport: inProc.NewNetwork(),
+		physicalTransport: NewNetwork(),
 		resolverControl:   sync.Mutex{},
 		resolverState:     resolver.State{},
 		resolver:          manual.NewBuilderWithScheme("in-proc"),

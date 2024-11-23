@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/go-faker/faker/v4"
 	"github.com/google/uuid"
+	"github.com/meschbach/npcs/junk/inProc"
 	"github.com/meschbach/npcs/t3"
 	"github.com/meschbach/npcs/t3/bots"
 	"github.com/meschbach/npcs/t3/network"
@@ -24,7 +25,7 @@ func TestPushGame(t *testing.T) {
 
 	gateway := network.NewPush()
 
-	net := NewTestGRPCLayer(t)
+	net := inProc.NewTestGRPCLayer(t)
 	physSrv := net.SpawnService(ctx, "push.npcs:54321", func(ctx context.Context, srv *grpc.Server) error {
 		network.RegisterT3PushServer(srv, gateway)
 		return nil
