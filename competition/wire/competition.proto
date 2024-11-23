@@ -1,0 +1,40 @@
+syntax = "proto3";
+option go_package = "competition/wire";
+
+service CompetitionV1 {
+  rpc RegisterPersistentPlayer(RegisterPlayerIn) returns (RegisterPlayerOut) {}
+  rpc QuickMatch(QuickMatchIn) returns (QuickMatchOut) {}
+}
+
+message UUID {
+  optional string text = 1;
+  optional bytes binary = 2;
+}
+
+message RegisterPlayerIn {
+  string orchestrationURL = 1;
+  string name = 2;
+}
+
+message RegisterPlayerOut {
+}
+
+message QuickMatchIn {
+}
+
+message QuickMatchOut {
+  string matchURL = 1;
+  string UUID = 2;
+}
+
+service Orchestration {
+  rpc Spawn(SpawnIn) returns (SpawnOut) {}
+}
+
+message SpawnIn {
+  UUID game = 1;
+}
+
+message SpawnOut {
+  string playerURL = 1;
+}

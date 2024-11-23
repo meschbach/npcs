@@ -11,3 +11,4 @@ function gen_grpc() {
 }
 
 gen_grpc t3/network/game.proto
+gen_grpc competition/wire/competition.proto

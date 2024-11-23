@@ -1,6 +1,9 @@
 syntax = "proto3";
 option go_package = "t3/network";
 
+/**
+ * T3 is a game dialed into by the game engine, when the particular AI agent is exported for general play.
+ */
 service T3 {
   rpc startGame(StartGameIn) returns (StartGameOut);
   rpc moveMade(MoveMadeIn) returns (MoveMadeOut);
@@ -8,12 +11,58 @@ service T3 {
   rpc concluded(ConclusionIn) returns (ConclusionOut);
 }
 
+/**
+ * T3Push is an interface exported by the game engine for clients to push in moves.
+ */
+service T3Push {
+  /**
+   * connectToGame creates a streaming event connection to the target game.  Each advance in the game will be sent
+   * as an event.
+   */
+  rpc connectToGame(JoinGameIn) returns (stream T3PushEvent);
+  /**
+   * Pushes a move onto the player stack.
+   */
+  rpc move(PushMoveIn) returns (PushMoveOut);
+}
+
+
 message StartGameIn {
   int64 yourPlayer = 1;
 }
 
 message StartGameOut {
   int64 gameID = 1;
+}
+
+message JoinGameIn {
+  /**
+   * gameID is the game to connect to for playing.
+   */
+  string gameID = 1;
+}
+
+message T3PushEvent {
+  optional JoinGameOut initial = 1;
+  optional MoveMadeIn move = 2;
+  optional ConclusionIn conclusion = 3;
+  optional PlayerTurn doTurn = 4;
+}
+
+message JoinGameOut {
+  /**
+   * yourPlayer indicates the player ID the client is connected to.
+   */
+  int64 yourPlayer = 1;
+}
+
+message PushMoveIn {
+  string gameID = 1;
+  NextMoveOut move = 2;
+}
+
+message PushMoveOut {
+
 }
 
 message MoveMadeIn {
@@ -43,4 +92,7 @@ message ConclusionIn {
 }
 
 message ConclusionOut {
+}
+
+message PlayerTurn {
 }
