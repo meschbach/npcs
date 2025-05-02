@@ -3,6 +3,8 @@ package integtest
 import (
 	"context"
 	"github.com/meschbach/npcs/competition/wire"
+	"github.com/meschbach/npcs/t3/bots"
+	"github.com/meschbach/npcs/t3/network"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -24,7 +26,10 @@ func TestSimpleOneOffGame(t *testing.T) {
 		require.NotNil(t, result)
 		assert.NotEmpty(t, result.MatchURL)
 
-		//dial out
-		//play the game
+		//build and build the client
+		fillIn := bots.NewFillInBot()
+		client := network.NewPushClient(result.MatchURL, result.UUID, player1Token, fillIn)
+		clientError := client.Serve(ctx)
+		require.NoError(t, clientError)
 	})
 }

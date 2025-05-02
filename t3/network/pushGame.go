@@ -11,6 +11,7 @@ import (
 type PushClient struct {
 	server string
 	gameID string
+	//todo: we aren't using this
 	token  string
 	player Session
 

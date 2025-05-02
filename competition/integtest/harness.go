@@ -24,23 +24,20 @@ var serviceAddress = "competition.npcs:11234"
 func WithCompetitionSystem(t *testing.T, fn func(ctx context.Context, t *testing.T, h *Harness)) {
 	ctx, done := context.WithTimeout(context.Background(), 1*time.Second)
 	t.Cleanup(done)
+
 	h := &Harness{
-		t:         t,
-		ctx:       ctx,
-		inProcNet: inProc.NewNetwork(),
-		Auth:      NewFakeAuth(),
-		CA:        testcerts.NewCA(),
+		t:        t,
+		ctx:      ctx,
+		internet: inProc.NewTestGRPCLayer(t),
+		Auth:     NewFakeAuth(),
+		CA:       testcerts.NewCA(),
 	}
 	t.Cleanup(func() {
 		h.cleanUp()
 	})
-	servicePair, err := h.CA.NewKeyPair("competition.npcs")
-	require.NoError(t, err)
-	serviceCfg, err := servicePair.ConfigureTLSConfig(&tls.Config{})
-	require.NoError(t, err)
 
 	//spawn the base system
-	surface, system := competition.NewIntegHarness(h.Auth, serviceAddress, h.inProcNet, serviceCfg)
+	surface, system := competition.NewIntegHarness(h.Auth, serviceAddress, h.internet)
 	h.Surface = surface
 	h.System = system
 
@@ -54,13 +51,13 @@ func WithCompetitionSystem(t *testing.T, fn func(ctx context.Context, t *testing
 }
 
 type Harness struct {
-	t         *testing.T
-	ctx       context.Context
-	inProcNet *inProc.Network
-	Surface   *competition.TestSurface
-	System    *competition.System
-	Auth      *FakeAuth
-	CA        *testcerts.CertificateAuthority
+	t        *testing.T
+	ctx      context.Context
+	internet *inProc.TestGRPCLayer
+	Surface  *competition.TestSurface
+	System   *competition.System
+	Auth     *FakeAuth
+	CA       *testcerts.CertificateAuthority
 
 	changes   sync.Mutex
 	cleanedUp bool

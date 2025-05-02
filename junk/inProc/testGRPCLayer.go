@@ -29,14 +29,26 @@ type TestGRPCLayer struct {
 	resolver        *manual.Resolver
 }
 
-func NewTestGRPCLayer(t *testing.T) *TestGRPCLayer {
-	return &TestGRPCLayer{
+func NewTestGRPCLayer(t *testing.T, opts ...TestGRPCOptionFunc) *TestGRPCLayer {
+	layer := &TestGRPCLayer{
 		t:                 t,
 		publicKeyInfra:    testcerts.NewCA(),
 		physicalTransport: NewNetwork(),
 		resolverControl:   sync.Mutex{},
 		resolverState:     resolver.State{},
 		resolver:          manual.NewBuilderWithScheme("in-proc"),
+	}
+	for _, opt := range opts {
+		opt(layer)
+	}
+	return layer
+}
+
+type TestGRPCOptionFunc func(*TestGRPCLayer)
+
+func WithNetwork(net *Network) TestGRPCOptionFunc {
+	return func(test *TestGRPCLayer) {
+		test.physicalTransport = net
 	}
 }
 
