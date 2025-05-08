@@ -26,8 +26,14 @@ const (
 // CompetitionV1Client is the client API for CompetitionV1 service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// CompetitionV1 matches players for a match.  Players may either register as persistent or play a quick match.
 type CompetitionV1Client interface {
+	// Registers the given player as a persistent service based player.  When a challenger appears the matching system
+	// will notify the registered player.
 	RegisterPersistentPlayer(ctx context.Context, in *RegisterPlayerIn, opts ...grpc.CallOption) (*RegisterPlayerOut, error)
+	// QuickMatch seeks a match with another waiting player or a registered persistent player.  No guarantees are made
+	// for the given match beyond anther player.
 	QuickMatch(ctx context.Context, in *QuickMatchIn, opts ...grpc.CallOption) (*QuickMatchOut, error)
 }
 
@@ -62,8 +68,14 @@ func (c *competitionV1Client) QuickMatch(ctx context.Context, in *QuickMatchIn, 
 // CompetitionV1Server is the server API for CompetitionV1 service.
 // All implementations must embed UnimplementedCompetitionV1Server
 // for forward compatibility.
+//
+// CompetitionV1 matches players for a match.  Players may either register as persistent or play a quick match.
 type CompetitionV1Server interface {
+	// Registers the given player as a persistent service based player.  When a challenger appears the matching system
+	// will notify the registered player.
 	RegisterPersistentPlayer(context.Context, *RegisterPlayerIn) (*RegisterPlayerOut, error)
+	// QuickMatch seeks a match with another waiting player or a registered persistent player.  No guarantees are made
+	// for the given match beyond anther player.
 	QuickMatch(context.Context, *QuickMatchIn) (*QuickMatchOut, error)
 	mustEmbedUnimplementedCompetitionV1Server()
 }
@@ -165,6 +177,8 @@ const (
 // OrchestrationClient is the client API for Orchestration service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// Orchestration is a player provided service for
 type OrchestrationClient interface {
 	Spawn(ctx context.Context, in *SpawnIn, opts ...grpc.CallOption) (*SpawnOut, error)
 }
@@ -190,6 +204,8 @@ func (c *orchestrationClient) Spawn(ctx context.Context, in *SpawnIn, opts ...gr
 // OrchestrationServer is the server API for Orchestration service.
 // All implementations must embed UnimplementedOrchestrationServer
 // for forward compatibility.
+//
+// Orchestration is a player provided service for
 type OrchestrationServer interface {
 	Spawn(context.Context, *SpawnIn) (*SpawnOut, error)
 	mustEmbedUnimplementedOrchestrationServer()

@@ -1,8 +1,19 @@
 syntax = "proto3";
 option go_package = "competition/wire";
 
+/*
+ * CompetitionV1 matches players for a match.  Players may either register as persistent or play a quick match.
+ */
 service CompetitionV1 {
+  /*
+   * Registers the given player as a persistent service based player.  When a challenger appears the matching system
+   * will notify the registered player.
+   */
   rpc RegisterPersistentPlayer(RegisterPlayerIn) returns (RegisterPlayerOut) {}
+  /*
+   * QuickMatch seeks a match with another waiting player or a registered persistent player.  No guarantees are made
+   * for the given match beyond anther player.
+   */
   rpc QuickMatch(QuickMatchIn) returns (QuickMatchOut) {}
 }
 
@@ -11,8 +22,17 @@ message UUID {
   optional bytes binary = 2;
 }
 
+/*
+ * RegisterPlayerIn provides a user handle and orchestration URL.
+ */
 message RegisterPlayerIn {
+  /*
+   * orchestrationURL is the address to contact the player at.  This must be an instance of the Orchestration service.
+   */
   string orchestrationURL = 1;
+  /*
+   * name is a human digestible name for the given player.
+   */
   string name = 2;
 }
 
@@ -22,11 +42,23 @@ message RegisterPlayerOut {
 message QuickMatchIn {
 }
 
+/*
+ * QuickMatchOut provides details on connecting to a match
+ */
 message QuickMatchOut {
+  /*
+   * matchURL is the implementing service for the given match.
+   */
   string matchURL = 1;
+  /*
+   * UUID for the given match to be provided to the target service.
+   */
   string UUID = 2;
 }
 
+/*
+ * Orchestration is a player provided service for
+ */
 service Orchestration {
   rpc Spawn(SpawnIn) returns (SpawnOut) {}
 }

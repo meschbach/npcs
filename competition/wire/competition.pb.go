@@ -75,13 +75,16 @@ func (x *UUID) GetBinary() []byte {
 	return nil
 }
 
+// RegisterPlayerIn provides a user handle and orchestration URL.
 type RegisterPlayerIn struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// orchestrationURL is the address to contact the player at.  This must be an instance of the Orchestration service.
 	OrchestrationURL string `protobuf:"bytes,1,opt,name=orchestrationURL,proto3" json:"orchestrationURL,omitempty"`
-	Name             string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// name is a human digestible name for the given player.
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 }
 
 func (x *RegisterPlayerIn) Reset() {
@@ -206,13 +209,16 @@ func (*QuickMatchIn) Descriptor() ([]byte, []int) {
 	return file_competition_wire_competition_proto_rawDescGZIP(), []int{3}
 }
 
+// QuickMatchOut provides details on connecting to a match
 type QuickMatchOut struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// matchURL is the implementing service for the given match.
 	MatchURL string `protobuf:"bytes,1,opt,name=matchURL,proto3" json:"matchURL,omitempty"`
-	UUID     string `protobuf:"bytes,2,opt,name=UUID,proto3" json:"UUID,omitempty"`
+	// UUID for the given match to be provided to the target service.
+	UUID string `protobuf:"bytes,2,opt,name=UUID,proto3" json:"UUID,omitempty"`
 }
 
 func (x *QuickMatchOut) Reset() {
