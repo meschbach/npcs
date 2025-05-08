@@ -19,16 +19,18 @@ import (
 	"time"
 )
 
-var serviceAddress = "competition.npcs:11234"
+const serviceAddress = "competition.npcs:11234"
 
 func WithCompetitionSystem(t *testing.T, fn func(ctx context.Context, t *testing.T, h *Harness)) {
 	ctx, done := context.WithTimeout(context.Background(), 1*time.Second)
 	t.Cleanup(done)
 
+	net := inProc.NewNetwork()
 	h := &Harness{
 		t:        t,
 		ctx:      ctx,
-		internet: inProc.NewTestGRPCLayer(t),
+		net:      net,
+		internet: inProc.NewTestGRPCLayer(t, inProc.WithNetwork(net)),
 		Auth:     NewFakeAuth(),
 		CA:       testcerts.NewCA(),
 	}
@@ -37,7 +39,7 @@ func WithCompetitionSystem(t *testing.T, fn func(ctx context.Context, t *testing
 	})
 
 	//spawn the base system
-	surface, system := competition.NewIntegHarness(h.Auth, serviceAddress, h.internet)
+	surface, system := competition.NewIntegHarness(h.Auth, serviceAddress, net, h.newServiceConfig("competition.npcs"))
 	h.Surface = surface
 	h.System = system
 
@@ -53,6 +55,7 @@ func WithCompetitionSystem(t *testing.T, fn func(ctx context.Context, t *testing
 type Harness struct {
 	t        *testing.T
 	ctx      context.Context
+	net      *inProc.Network
 	internet *inProc.TestGRPCLayer
 	Surface  *competition.TestSurface
 	System   *competition.System
@@ -104,7 +107,36 @@ func (h *Harness) NewClient(userToken string) wire.CompetitionV1Client {
 	})
 
 	perRPC := oauth.TokenSource{TokenSource: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: userToken})}
-	conn, err := grpc.NewClient("in-proc://"+serviceAddress, grpc.WithContextDialer(h.inProcNet.Dial), grpc.WithPerRPCCredentials(perRPC), grpc.WithTransportCredentials(creds), grpc.WithResolvers(p))
+	conn, err := grpc.NewClient("in-proc://"+serviceAddress, grpc.WithContextDialer(h.net.Dial), grpc.WithPerRPCCredentials(perRPC), grpc.WithTransportCredentials(creds), grpc.WithResolvers(p))
 	require.NoError(h.t, err)
 	return wire.NewCompetitionV1Client(conn)
+}
+
+func (h *Harness) newServiceConfig(domainName string) *tls.Config {
+	pair, err := h.CA.NewKeyPair(domainName)
+	if err != nil {
+		panic(err)
+	}
+	cfg, err := pair.ConfigureTLSConfig(h.CA.GenerateTLSConfig())
+	if err != nil {
+		panic(err)
+	}
+	return cfg
+}
+
+func (h *Harness) NewGRPCClientOptions(serverName, address string) []grpc.DialOption {
+	creds := credentials.NewTLS(&tls.Config{
+		InsecureSkipVerify: true,
+	})
+
+	p := manual.NewBuilderWithScheme("in-proc")
+	p.InitialState(resolver.State{
+		Addresses: []resolver.Address{
+			{Addr: address, ServerName: serverName},
+		},
+	})
+
+	return []grpc.DialOption{
+		grpc.WithContextDialer(h.net.Dial), grpc.WithTransportCredentials(creds), grpc.WithResolvers(p),
+	}
 }

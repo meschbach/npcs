@@ -94,8 +94,8 @@ func (t *TestSurface) Run(ctx context.Context) {
 	s.ServeBackground(ctx)
 }
 
-func NewIntegHarness(auth Auth, listenAt string, onNetwork Network) (*TestSurface, *System) {
-	system := NewCompetitionSystem(auth, listenAt, onNetwork, cfg)
+func NewIntegHarness(auth Auth, listenAt string, onNetwork Network, tlsConfig *tls.Config) (*TestSurface, *System) {
+	system := NewCompetitionSystem(auth, listenAt, onNetwork, tlsConfig)
 	return &TestSurface{
 		system: system,
 	}, system
