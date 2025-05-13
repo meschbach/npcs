@@ -6,7 +6,6 @@ import (
 	"github.com/meschbach/npcs/competition/wire"
 	"github.com/thejerf/suture/v4"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 	"sync"
 )
 
@@ -17,7 +16,7 @@ const (
 )
 
 type System struct {
-	network        Network
+	network        GRPCNetwork
 	serviceAddress string
 	auth           Auth
 	tls            *tls.Config
@@ -25,33 +24,32 @@ type System struct {
 }
 
 func (s *System) Serve(ctx context.Context) error {
-	v1 := &v1Service{
+	v1 := &clientCompetitionService{
 		auth:         s.auth,
 		lock:         sync.Mutex{},
 		persistent:   make(map[string]*persistentPlayer),
+		gameResult:   make(map[string]*completedGameResult),
 		t3MatchesURL: s.serviceAddress,
 	}
-	transportCreds := credentials.NewTLS(s.tls)
-	grpcEvents := make(chan GRPCEventKind, 5)
-	socket := &GRPCService{
-		network: s.network,
-		address: s.serviceAddress,
-		register: func(ctx context.Context, srv *grpc.Server) error {
-			wire.RegisterCompetitionV1Server(srv, v1)
-			return nil
-		},
-		opts: []grpc.ServerOption{
-			grpc.Creds(transportCreds),
-		},
-		events: grpcEvents,
-	}
-	subsystems := suture.NewSimple("competition-system")
-	subsystems.Add(socket)
-	subsystems.Add(&grpcEventAdapter{
-		source: grpcEvents,
-		target: s.Events,
+	registry := NewGameRegistryService()
+	enginePlaneOrchestration := newEngines(registry)
+
+	listener, err := s.network.Listener(ctx, s.serviceAddress, func(ctx context.Context, server *grpc.Server) error {
+		wire.RegisterCompetitionV1Server(server, v1)
+		wire.RegisterGameRegistryServer(server, registry)
+		wire.RegisterGameEngineOrchestrationServer(server, enginePlaneOrchestration)
+		return nil
 	})
-	return subsystems.Serve(ctx)
+	if err != nil {
+		return err
+	}
+	if err := listener.Start(ctx); err != nil {
+		return err
+	}
+	select {
+	case <-ctx.Done():
+		return listener.Stop(ctx)
+	}
 }
 
 type grpcEventAdapter struct {
@@ -74,7 +72,7 @@ func (g *grpcEventAdapter) Serve(ctx context.Context) error {
 	}
 }
 
-func NewCompetitionSystem(auth Auth, listenAt string, onNetwork Network, tlsConfig *tls.Config) *System {
+func NewCompetitionSystem(auth Auth, listenAt string, onNetwork GRPCNetwork, tlsConfig *tls.Config) *System {
 	return &System{
 		network:        onNetwork,
 		serviceAddress: listenAt,
@@ -92,11 +90,4 @@ func (t *TestSurface) Run(ctx context.Context) {
 	s := suture.NewSimple("competition-system")
 	s.Add(t.system)
 	s.ServeBackground(ctx)
-}
-
-func NewIntegHarness(auth Auth, listenAt string, onNetwork Network, tlsConfig *tls.Config) (*TestSurface, *System) {
-	system := NewCompetitionSystem(auth, listenAt, onNetwork, tlsConfig)
-	return &TestSurface{
-		system: system,
-	}, system
 }

@@ -37,6 +37,7 @@ func (g *GRPCService) Serve(ctx context.Context) error {
 		if g.events != nil {
 			g.events <- GRPCEventReady
 		}
+		fmt.Printf("grpc service at %q listening\n", g.address)
 		err := server.Serve(listener)
 		listenerErr <- err
 	})()

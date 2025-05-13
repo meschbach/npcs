@@ -3,8 +3,6 @@ package integtest
 import (
 	"context"
 	"github.com/meschbach/npcs/competition/wire"
-	"github.com/meschbach/npcs/t3/bots"
-	t3net "github.com/meschbach/npcs/t3/network"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -24,17 +22,24 @@ func TestSimpleOneOffGame(t *testing.T) {
 		require.NoError(t, err)
 
 		/// When we attempt to schedule a quick match
-		result, err := player1.QuickMatch(ctx, &wire.QuickMatchIn{})
+		quickMatchName := "quick-match-player"
+		result, err := player1.QuickMatch(ctx, &wire.QuickMatchIn{
+			PlayerName: quickMatchName,
+		})
 		require.NoError(t, err)
 
 		require.NotNil(t, result)
 		assert.NotEmpty(t, result.MatchURL)
 
-		// and construct a push client
-		fillIn := bots.NewFillInBot()
-		client := t3net.NewPushClient("in-proc://"+result.MatchURL, result.UUID, player1Token, fillIn, h.NewGRPCClientOptions("competition.npcs", result.MatchURL)...)
-		// then we should be able to play through the game.
-		clientError := client.Serve(ctx)
-		require.NoError(t, clientError)
+		// and constructs a new simple test service client
+		simpleGameAddress := h.internet.Connect(ctx, "in-proc://"+result.MatchURL)
+		simpleGameClient := wire.NewSimpleTestGameServiceClient(simpleGameAddress)
+		_, err = simpleGameClient.Connected(ctx, &wire.SimpleTestGameIn{GameID: result.UUID})
+		require.NoError(t, err)
+
+		// then the quick match name should have been recorded as the winner
+		gameResult, err := player1.GameResult(ctx, &wire.GameResultIn{GameID: result.UUID})
+		require.NoError(t, err)
+		assert.Equal(t, gameResult.WinningPlayerName, quickMatchName)
 	})
 }

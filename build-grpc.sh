@@ -11,4 +11,6 @@ function gen_grpc() {
 }
 
 gen_grpc t3/network/game.proto
+git add t3/network/game.pb.go t3/network/game_grpc.pb.go
 gen_grpc competition/wire/competition.proto
+git add competition/wire/competition.pb.go competition/wire/competition_grpc.pb.go

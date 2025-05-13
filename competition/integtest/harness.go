@@ -8,6 +8,7 @@ import (
 	"github.com/meschbach/npcs/competition/wire"
 	"github.com/meschbach/npcs/junk/inProc"
 	"github.com/stretchr/testify/require"
+	"github.com/thejerf/suture/v4"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -43,12 +44,24 @@ func WithCompetitionSystem(t *testing.T, fn func(ctx context.Context, t *testing
 	h.Surface = surface
 	h.System = system
 
+	//wait for the system to be available
 	surface.Run(ctx)
 	select {
 	case <-h.ctx.Done():
 		require.NoError(t, h.ctx.Err())
 	case <-system.Events:
 	}
+
+	//spin up a test game
+	testGameEngine := newTestGameEngine("first-winner",
+		"in-proc://orchestration.npcs:11234",
+		"first-winner.test-game-engine.npcs:1234",
+		h.internet)
+	testGameEngineExecutor := suture.NewSimple("testGameEngineExecutor")
+	testGameEngineExecutor.Add(testGameEngine)
+	testGameEngineExecutor.ServeBackground(ctx)
+
+	// run the test
 	fn(ctx, t, h)
 }
 

@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CompetitionV1_RegisterPersistentPlayer_FullMethodName = "/CompetitionV1/RegisterPersistentPlayer"
-	CompetitionV1_QuickMatch_FullMethodName               = "/CompetitionV1/QuickMatch"
+	CompetitionV1_RegisterPersistentPlayer_FullMethodName = "/CompetitionV1/registerPersistentPlayer"
+	CompetitionV1_QuickMatch_FullMethodName               = "/CompetitionV1/quickMatch"
+	CompetitionV1_GameResult_FullMethodName               = "/CompetitionV1/gameResult"
 )
 
 // CompetitionV1Client is the client API for CompetitionV1 service.
@@ -35,6 +36,7 @@ type CompetitionV1Client interface {
 	// QuickMatch seeks a match with another waiting player or a registered persistent player.  No guarantees are made
 	// for the given match beyond anther player.
 	QuickMatch(ctx context.Context, in *QuickMatchIn, opts ...grpc.CallOption) (*QuickMatchOut, error)
+	GameResult(ctx context.Context, in *GameResultIn, opts ...grpc.CallOption) (*GameResultOut, error)
 }
 
 type competitionV1Client struct {
@@ -65,6 +67,16 @@ func (c *competitionV1Client) QuickMatch(ctx context.Context, in *QuickMatchIn, 
 	return out, nil
 }
 
+func (c *competitionV1Client) GameResult(ctx context.Context, in *GameResultIn, opts ...grpc.CallOption) (*GameResultOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GameResultOut)
+	err := c.cc.Invoke(ctx, CompetitionV1_GameResult_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CompetitionV1Server is the server API for CompetitionV1 service.
 // All implementations must embed UnimplementedCompetitionV1Server
 // for forward compatibility.
@@ -77,6 +89,7 @@ type CompetitionV1Server interface {
 	// QuickMatch seeks a match with another waiting player or a registered persistent player.  No guarantees are made
 	// for the given match beyond anther player.
 	QuickMatch(context.Context, *QuickMatchIn) (*QuickMatchOut, error)
+	GameResult(context.Context, *GameResultIn) (*GameResultOut, error)
 	mustEmbedUnimplementedCompetitionV1Server()
 }
 
@@ -92,6 +105,9 @@ func (UnimplementedCompetitionV1Server) RegisterPersistentPlayer(context.Context
 }
 func (UnimplementedCompetitionV1Server) QuickMatch(context.Context, *QuickMatchIn) (*QuickMatchOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QuickMatch not implemented")
+}
+func (UnimplementedCompetitionV1Server) GameResult(context.Context, *GameResultIn) (*GameResultOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GameResult not implemented")
 }
 func (UnimplementedCompetitionV1Server) mustEmbedUnimplementedCompetitionV1Server() {}
 func (UnimplementedCompetitionV1Server) testEmbeddedByValue()                       {}
@@ -150,6 +166,24 @@ func _CompetitionV1_QuickMatch_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CompetitionV1_GameResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GameResultIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompetitionV1Server).GameResult(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CompetitionV1_GameResult_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompetitionV1Server).GameResult(ctx, req.(*GameResultIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CompetitionV1_ServiceDesc is the grpc.ServiceDesc for CompetitionV1 service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -158,12 +192,16 @@ var CompetitionV1_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*CompetitionV1Server)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "RegisterPersistentPlayer",
+			MethodName: "registerPersistentPlayer",
 			Handler:    _CompetitionV1_RegisterPersistentPlayer_Handler,
 		},
 		{
-			MethodName: "QuickMatch",
+			MethodName: "quickMatch",
 			Handler:    _CompetitionV1_QuickMatch_Handler,
+		},
+		{
+			MethodName: "gameResult",
+			Handler:    _CompetitionV1_GameResult_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -270,6 +308,431 @@ var Orchestration_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Spawn",
 			Handler:    _Orchestration_Spawn_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "competition/wire/competition.proto",
+}
+
+const (
+	GameRegistry_RegisterGame_FullMethodName        = "/GameRegistry/registerGame"
+	GameRegistry_UnregisterGame_FullMethodName      = "/GameRegistry/unregisterGame"
+	GameRegistry_ListRegisteredGames_FullMethodName = "/GameRegistry/listRegisteredGames"
+)
+
+// GameRegistryClient is the client API for GameRegistry service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// GameRegistry is an administration plane system for manging which games are available and their execution mechanisms.
+type GameRegistryClient interface {
+	RegisterGame(ctx context.Context, in *RegisterGameIn, opts ...grpc.CallOption) (*RegisterGameOut, error)
+	UnregisterGame(ctx context.Context, in *UnregisterGameIn, opts ...grpc.CallOption) (*UnregisterGameOut, error)
+	ListRegisteredGames(ctx context.Context, in *ListRegisteredGamesIn, opts ...grpc.CallOption) (*ListRegisteredGamesOut, error)
+}
+
+type gameRegistryClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewGameRegistryClient(cc grpc.ClientConnInterface) GameRegistryClient {
+	return &gameRegistryClient{cc}
+}
+
+func (c *gameRegistryClient) RegisterGame(ctx context.Context, in *RegisterGameIn, opts ...grpc.CallOption) (*RegisterGameOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RegisterGameOut)
+	err := c.cc.Invoke(ctx, GameRegistry_RegisterGame_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameRegistryClient) UnregisterGame(ctx context.Context, in *UnregisterGameIn, opts ...grpc.CallOption) (*UnregisterGameOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UnregisterGameOut)
+	err := c.cc.Invoke(ctx, GameRegistry_UnregisterGame_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameRegistryClient) ListRegisteredGames(ctx context.Context, in *ListRegisteredGamesIn, opts ...grpc.CallOption) (*ListRegisteredGamesOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListRegisteredGamesOut)
+	err := c.cc.Invoke(ctx, GameRegistry_ListRegisteredGames_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// GameRegistryServer is the server API for GameRegistry service.
+// All implementations must embed UnimplementedGameRegistryServer
+// for forward compatibility.
+//
+// GameRegistry is an administration plane system for manging which games are available and their execution mechanisms.
+type GameRegistryServer interface {
+	RegisterGame(context.Context, *RegisterGameIn) (*RegisterGameOut, error)
+	UnregisterGame(context.Context, *UnregisterGameIn) (*UnregisterGameOut, error)
+	ListRegisteredGames(context.Context, *ListRegisteredGamesIn) (*ListRegisteredGamesOut, error)
+	mustEmbedUnimplementedGameRegistryServer()
+}
+
+// UnimplementedGameRegistryServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedGameRegistryServer struct{}
+
+func (UnimplementedGameRegistryServer) RegisterGame(context.Context, *RegisterGameIn) (*RegisterGameOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterGame not implemented")
+}
+func (UnimplementedGameRegistryServer) UnregisterGame(context.Context, *UnregisterGameIn) (*UnregisterGameOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnregisterGame not implemented")
+}
+func (UnimplementedGameRegistryServer) ListRegisteredGames(context.Context, *ListRegisteredGamesIn) (*ListRegisteredGamesOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListRegisteredGames not implemented")
+}
+func (UnimplementedGameRegistryServer) mustEmbedUnimplementedGameRegistryServer() {}
+func (UnimplementedGameRegistryServer) testEmbeddedByValue()                      {}
+
+// UnsafeGameRegistryServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to GameRegistryServer will
+// result in compilation errors.
+type UnsafeGameRegistryServer interface {
+	mustEmbedUnimplementedGameRegistryServer()
+}
+
+func RegisterGameRegistryServer(s grpc.ServiceRegistrar, srv GameRegistryServer) {
+	// If the following call pancis, it indicates UnimplementedGameRegistryServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&GameRegistry_ServiceDesc, srv)
+}
+
+func _GameRegistry_RegisterGame_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterGameIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameRegistryServer).RegisterGame(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameRegistry_RegisterGame_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameRegistryServer).RegisterGame(ctx, req.(*RegisterGameIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameRegistry_UnregisterGame_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnregisterGameIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameRegistryServer).UnregisterGame(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameRegistry_UnregisterGame_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameRegistryServer).UnregisterGame(ctx, req.(*UnregisterGameIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameRegistry_ListRegisteredGames_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRegisteredGamesIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameRegistryServer).ListRegisteredGames(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameRegistry_ListRegisteredGames_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameRegistryServer).ListRegisteredGames(ctx, req.(*ListRegisteredGamesIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// GameRegistry_ServiceDesc is the grpc.ServiceDesc for GameRegistry service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var GameRegistry_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "GameRegistry",
+	HandlerType: (*GameRegistryServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "registerGame",
+			Handler:    _GameRegistry_RegisterGame_Handler,
+		},
+		{
+			MethodName: "unregisterGame",
+			Handler:    _GameRegistry_UnregisterGame_Handler,
+		},
+		{
+			MethodName: "listRegisteredGames",
+			Handler:    _GameRegistry_ListRegisteredGames_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "competition/wire/competition.proto",
+}
+
+const (
+	GameEngineOrchestration_EngineAvailable_FullMethodName = "/GameEngineOrchestration/engineAvailable"
+	GameEngineOrchestration_GameComplete_FullMethodName    = "/GameEngineOrchestration/gameComplete"
+)
+
+// GameEngineOrchestrationClient is the client API for GameEngineOrchestration service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type GameEngineOrchestrationClient interface {
+	EngineAvailable(ctx context.Context, in *EngineAvailableIn, opts ...grpc.CallOption) (*EngineAvailableOut, error)
+	GameComplete(ctx context.Context, in *EngineGameCompleteIn, opts ...grpc.CallOption) (*EngineGameCompleteOut, error)
+}
+
+type gameEngineOrchestrationClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewGameEngineOrchestrationClient(cc grpc.ClientConnInterface) GameEngineOrchestrationClient {
+	return &gameEngineOrchestrationClient{cc}
+}
+
+func (c *gameEngineOrchestrationClient) EngineAvailable(ctx context.Context, in *EngineAvailableIn, opts ...grpc.CallOption) (*EngineAvailableOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(EngineAvailableOut)
+	err := c.cc.Invoke(ctx, GameEngineOrchestration_EngineAvailable_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameEngineOrchestrationClient) GameComplete(ctx context.Context, in *EngineGameCompleteIn, opts ...grpc.CallOption) (*EngineGameCompleteOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(EngineGameCompleteOut)
+	err := c.cc.Invoke(ctx, GameEngineOrchestration_GameComplete_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// GameEngineOrchestrationServer is the server API for GameEngineOrchestration service.
+// All implementations must embed UnimplementedGameEngineOrchestrationServer
+// for forward compatibility.
+type GameEngineOrchestrationServer interface {
+	EngineAvailable(context.Context, *EngineAvailableIn) (*EngineAvailableOut, error)
+	GameComplete(context.Context, *EngineGameCompleteIn) (*EngineGameCompleteOut, error)
+	mustEmbedUnimplementedGameEngineOrchestrationServer()
+}
+
+// UnimplementedGameEngineOrchestrationServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedGameEngineOrchestrationServer struct{}
+
+func (UnimplementedGameEngineOrchestrationServer) EngineAvailable(context.Context, *EngineAvailableIn) (*EngineAvailableOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EngineAvailable not implemented")
+}
+func (UnimplementedGameEngineOrchestrationServer) GameComplete(context.Context, *EngineGameCompleteIn) (*EngineGameCompleteOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GameComplete not implemented")
+}
+func (UnimplementedGameEngineOrchestrationServer) mustEmbedUnimplementedGameEngineOrchestrationServer() {
+}
+func (UnimplementedGameEngineOrchestrationServer) testEmbeddedByValue() {}
+
+// UnsafeGameEngineOrchestrationServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to GameEngineOrchestrationServer will
+// result in compilation errors.
+type UnsafeGameEngineOrchestrationServer interface {
+	mustEmbedUnimplementedGameEngineOrchestrationServer()
+}
+
+func RegisterGameEngineOrchestrationServer(s grpc.ServiceRegistrar, srv GameEngineOrchestrationServer) {
+	// If the following call pancis, it indicates UnimplementedGameEngineOrchestrationServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&GameEngineOrchestration_ServiceDesc, srv)
+}
+
+func _GameEngineOrchestration_EngineAvailable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EngineAvailableIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameEngineOrchestrationServer).EngineAvailable(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameEngineOrchestration_EngineAvailable_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameEngineOrchestrationServer).EngineAvailable(ctx, req.(*EngineAvailableIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameEngineOrchestration_GameComplete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EngineGameCompleteIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameEngineOrchestrationServer).GameComplete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameEngineOrchestration_GameComplete_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameEngineOrchestrationServer).GameComplete(ctx, req.(*EngineGameCompleteIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// GameEngineOrchestration_ServiceDesc is the grpc.ServiceDesc for GameEngineOrchestration service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var GameEngineOrchestration_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "GameEngineOrchestration",
+	HandlerType: (*GameEngineOrchestrationServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "engineAvailable",
+			Handler:    _GameEngineOrchestration_EngineAvailable_Handler,
+		},
+		{
+			MethodName: "gameComplete",
+			Handler:    _GameEngineOrchestration_GameComplete_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "competition/wire/competition.proto",
+}
+
+const (
+	SimpleTestGameService_Connected_FullMethodName = "/SimpleTestGameService/connected"
+)
+
+// SimpleTestGameServiceClient is the client API for SimpleTestGameService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type SimpleTestGameServiceClient interface {
+	Connected(ctx context.Context, in *SimpleTestGameIn, opts ...grpc.CallOption) (*SimpleTestGameOut, error)
+}
+
+type simpleTestGameServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewSimpleTestGameServiceClient(cc grpc.ClientConnInterface) SimpleTestGameServiceClient {
+	return &simpleTestGameServiceClient{cc}
+}
+
+func (c *simpleTestGameServiceClient) Connected(ctx context.Context, in *SimpleTestGameIn, opts ...grpc.CallOption) (*SimpleTestGameOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SimpleTestGameOut)
+	err := c.cc.Invoke(ctx, SimpleTestGameService_Connected_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// SimpleTestGameServiceServer is the server API for SimpleTestGameService service.
+// All implementations must embed UnimplementedSimpleTestGameServiceServer
+// for forward compatibility.
+type SimpleTestGameServiceServer interface {
+	Connected(context.Context, *SimpleTestGameIn) (*SimpleTestGameOut, error)
+	mustEmbedUnimplementedSimpleTestGameServiceServer()
+}
+
+// UnimplementedSimpleTestGameServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedSimpleTestGameServiceServer struct{}
+
+func (UnimplementedSimpleTestGameServiceServer) Connected(context.Context, *SimpleTestGameIn) (*SimpleTestGameOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Connected not implemented")
+}
+func (UnimplementedSimpleTestGameServiceServer) mustEmbedUnimplementedSimpleTestGameServiceServer() {}
+func (UnimplementedSimpleTestGameServiceServer) testEmbeddedByValue()                               {}
+
+// UnsafeSimpleTestGameServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to SimpleTestGameServiceServer will
+// result in compilation errors.
+type UnsafeSimpleTestGameServiceServer interface {
+	mustEmbedUnimplementedSimpleTestGameServiceServer()
+}
+
+func RegisterSimpleTestGameServiceServer(s grpc.ServiceRegistrar, srv SimpleTestGameServiceServer) {
+	// If the following call pancis, it indicates UnimplementedSimpleTestGameServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&SimpleTestGameService_ServiceDesc, srv)
+}
+
+func _SimpleTestGameService_Connected_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SimpleTestGameIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SimpleTestGameServiceServer).Connected(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SimpleTestGameService_Connected_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SimpleTestGameServiceServer).Connected(ctx, req.(*SimpleTestGameIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// SimpleTestGameService_ServiceDesc is the grpc.ServiceDesc for SimpleTestGameService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var SimpleTestGameService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "SimpleTestGameService",
+	HandlerType: (*SimpleTestGameServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "connected",
+			Handler:    _SimpleTestGameService_Connected_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

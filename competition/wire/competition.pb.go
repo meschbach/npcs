@@ -175,6 +175,8 @@ type QuickMatchIn struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
+
+	PlayerName string `protobuf:"bytes,1,opt,name=playerName,proto3" json:"playerName,omitempty"`
 }
 
 func (x *QuickMatchIn) Reset() {
@@ -207,6 +209,13 @@ func (x *QuickMatchIn) ProtoReflect() protoreflect.Message {
 // Deprecated: Use QuickMatchIn.ProtoReflect.Descriptor instead.
 func (*QuickMatchIn) Descriptor() ([]byte, []int) {
 	return file_competition_wire_competition_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *QuickMatchIn) GetPlayerName() string {
+	if x != nil {
+		return x.PlayerName
+	}
+	return ""
 }
 
 // QuickMatchOut provides details on connecting to a match
@@ -361,6 +370,699 @@ func (x *SpawnOut) GetPlayerURL() string {
 	return ""
 }
 
+type RegisterGameIn struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+}
+
+func (x *RegisterGameIn) Reset() {
+	*x = RegisterGameIn{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_competition_wire_competition_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RegisterGameIn) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegisterGameIn) ProtoMessage() {}
+
+func (x *RegisterGameIn) ProtoReflect() protoreflect.Message {
+	mi := &file_competition_wire_competition_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegisterGameIn.ProtoReflect.Descriptor instead.
+func (*RegisterGameIn) Descriptor() ([]byte, []int) {
+	return file_competition_wire_competition_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *RegisterGameIn) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type RegisterGameOut struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (x *RegisterGameOut) Reset() {
+	*x = RegisterGameOut{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_competition_wire_competition_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RegisterGameOut) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegisterGameOut) ProtoMessage() {}
+
+func (x *RegisterGameOut) ProtoReflect() protoreflect.Message {
+	mi := &file_competition_wire_competition_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegisterGameOut.ProtoReflect.Descriptor instead.
+func (*RegisterGameOut) Descriptor() ([]byte, []int) {
+	return file_competition_wire_competition_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *RegisterGameOut) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type UnregisterGameIn struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (x *UnregisterGameIn) Reset() {
+	*x = UnregisterGameIn{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_competition_wire_competition_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UnregisterGameIn) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnregisterGameIn) ProtoMessage() {}
+
+func (x *UnregisterGameIn) ProtoReflect() protoreflect.Message {
+	mi := &file_competition_wire_competition_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnregisterGameIn.ProtoReflect.Descriptor instead.
+func (*UnregisterGameIn) Descriptor() ([]byte, []int) {
+	return file_competition_wire_competition_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *UnregisterGameIn) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type UnregisterGameOut struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *UnregisterGameOut) Reset() {
+	*x = UnregisterGameOut{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_competition_wire_competition_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UnregisterGameOut) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnregisterGameOut) ProtoMessage() {}
+
+func (x *UnregisterGameOut) ProtoReflect() protoreflect.Message {
+	mi := &file_competition_wire_competition_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnregisterGameOut.ProtoReflect.Descriptor instead.
+func (*UnregisterGameOut) Descriptor() ([]byte, []int) {
+	return file_competition_wire_competition_proto_rawDescGZIP(), []int{10}
+}
+
+type ListRegisteredGamesIn struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *ListRegisteredGamesIn) Reset() {
+	*x = ListRegisteredGamesIn{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_competition_wire_competition_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListRegisteredGamesIn) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListRegisteredGamesIn) ProtoMessage() {}
+
+func (x *ListRegisteredGamesIn) ProtoReflect() protoreflect.Message {
+	mi := &file_competition_wire_competition_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListRegisteredGamesIn.ProtoReflect.Descriptor instead.
+func (*ListRegisteredGamesIn) Descriptor() ([]byte, []int) {
+	return file_competition_wire_competition_proto_rawDescGZIP(), []int{11}
+}
+
+type RegisteredGame struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name   string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Id     string `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	Active bool   `protobuf:"varint,3,opt,name=active,proto3" json:"active,omitempty"`
+}
+
+func (x *RegisteredGame) Reset() {
+	*x = RegisteredGame{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_competition_wire_competition_proto_msgTypes[12]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RegisteredGame) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegisteredGame) ProtoMessage() {}
+
+func (x *RegisteredGame) ProtoReflect() protoreflect.Message {
+	mi := &file_competition_wire_competition_proto_msgTypes[12]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegisteredGame.ProtoReflect.Descriptor instead.
+func (*RegisteredGame) Descriptor() ([]byte, []int) {
+	return file_competition_wire_competition_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *RegisteredGame) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *RegisteredGame) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *RegisteredGame) GetActive() bool {
+	if x != nil {
+		return x.Active
+	}
+	return false
+}
+
+type ListRegisteredGamesOut struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Games []*RegisteredGame `protobuf:"bytes,1,rep,name=games,proto3" json:"games,omitempty"`
+}
+
+func (x *ListRegisteredGamesOut) Reset() {
+	*x = ListRegisteredGamesOut{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_competition_wire_competition_proto_msgTypes[13]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListRegisteredGamesOut) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListRegisteredGamesOut) ProtoMessage() {}
+
+func (x *ListRegisteredGamesOut) ProtoReflect() protoreflect.Message {
+	mi := &file_competition_wire_competition_proto_msgTypes[13]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListRegisteredGamesOut.ProtoReflect.Descriptor instead.
+func (*ListRegisteredGamesOut) Descriptor() ([]byte, []int) {
+	return file_competition_wire_competition_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *ListRegisteredGamesOut) GetGames() []*RegisteredGame {
+	if x != nil {
+		return x.Games
+	}
+	return nil
+}
+
+type EngineAvailableIn struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ForGame  string `protobuf:"bytes,1,opt,name=forGame,proto3" json:"forGame,omitempty"`
+	StartURL string `protobuf:"bytes,2,opt,name=startURL,proto3" json:"startURL,omitempty"`
+}
+
+func (x *EngineAvailableIn) Reset() {
+	*x = EngineAvailableIn{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_competition_wire_competition_proto_msgTypes[14]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EngineAvailableIn) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EngineAvailableIn) ProtoMessage() {}
+
+func (x *EngineAvailableIn) ProtoReflect() protoreflect.Message {
+	mi := &file_competition_wire_competition_proto_msgTypes[14]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EngineAvailableIn.ProtoReflect.Descriptor instead.
+func (*EngineAvailableIn) Descriptor() ([]byte, []int) {
+	return file_competition_wire_competition_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *EngineAvailableIn) GetForGame() string {
+	if x != nil {
+		return x.ForGame
+	}
+	return ""
+}
+
+func (x *EngineAvailableIn) GetStartURL() string {
+	if x != nil {
+		return x.StartURL
+	}
+	return ""
+}
+
+type EngineAvailableOut struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	GameID string `protobuf:"bytes,1,opt,name=gameID,proto3" json:"gameID,omitempty"`
+}
+
+func (x *EngineAvailableOut) Reset() {
+	*x = EngineAvailableOut{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_competition_wire_competition_proto_msgTypes[15]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EngineAvailableOut) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EngineAvailableOut) ProtoMessage() {}
+
+func (x *EngineAvailableOut) ProtoReflect() protoreflect.Message {
+	mi := &file_competition_wire_competition_proto_msgTypes[15]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EngineAvailableOut.ProtoReflect.Descriptor instead.
+func (*EngineAvailableOut) Descriptor() ([]byte, []int) {
+	return file_competition_wire_competition_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *EngineAvailableOut) GetGameID() string {
+	if x != nil {
+		return x.GameID
+	}
+	return ""
+}
+
+type SimpleTestGameIn struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	GameID string `protobuf:"bytes,1,opt,name=gameID,proto3" json:"gameID,omitempty"`
+}
+
+func (x *SimpleTestGameIn) Reset() {
+	*x = SimpleTestGameIn{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_competition_wire_competition_proto_msgTypes[16]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SimpleTestGameIn) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SimpleTestGameIn) ProtoMessage() {}
+
+func (x *SimpleTestGameIn) ProtoReflect() protoreflect.Message {
+	mi := &file_competition_wire_competition_proto_msgTypes[16]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SimpleTestGameIn.ProtoReflect.Descriptor instead.
+func (*SimpleTestGameIn) Descriptor() ([]byte, []int) {
+	return file_competition_wire_competition_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *SimpleTestGameIn) GetGameID() string {
+	if x != nil {
+		return x.GameID
+	}
+	return ""
+}
+
+type SimpleTestGameOut struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *SimpleTestGameOut) Reset() {
+	*x = SimpleTestGameOut{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_competition_wire_competition_proto_msgTypes[17]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SimpleTestGameOut) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SimpleTestGameOut) ProtoMessage() {}
+
+func (x *SimpleTestGameOut) ProtoReflect() protoreflect.Message {
+	mi := &file_competition_wire_competition_proto_msgTypes[17]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SimpleTestGameOut.ProtoReflect.Descriptor instead.
+func (*SimpleTestGameOut) Descriptor() ([]byte, []int) {
+	return file_competition_wire_competition_proto_rawDescGZIP(), []int{17}
+}
+
+type EngineGameCompleteIn struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	GameID string `protobuf:"bytes,1,opt,name=gameID,proto3" json:"gameID,omitempty"`
+}
+
+func (x *EngineGameCompleteIn) Reset() {
+	*x = EngineGameCompleteIn{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_competition_wire_competition_proto_msgTypes[18]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EngineGameCompleteIn) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EngineGameCompleteIn) ProtoMessage() {}
+
+func (x *EngineGameCompleteIn) ProtoReflect() protoreflect.Message {
+	mi := &file_competition_wire_competition_proto_msgTypes[18]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EngineGameCompleteIn.ProtoReflect.Descriptor instead.
+func (*EngineGameCompleteIn) Descriptor() ([]byte, []int) {
+	return file_competition_wire_competition_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *EngineGameCompleteIn) GetGameID() string {
+	if x != nil {
+		return x.GameID
+	}
+	return ""
+}
+
+type EngineGameCompleteOut struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *EngineGameCompleteOut) Reset() {
+	*x = EngineGameCompleteOut{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_competition_wire_competition_proto_msgTypes[19]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EngineGameCompleteOut) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EngineGameCompleteOut) ProtoMessage() {}
+
+func (x *EngineGameCompleteOut) ProtoReflect() protoreflect.Message {
+	mi := &file_competition_wire_competition_proto_msgTypes[19]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EngineGameCompleteOut.ProtoReflect.Descriptor instead.
+func (*EngineGameCompleteOut) Descriptor() ([]byte, []int) {
+	return file_competition_wire_competition_proto_rawDescGZIP(), []int{19}
+}
+
+type GameResultIn struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	GameID string `protobuf:"bytes,1,opt,name=gameID,proto3" json:"gameID,omitempty"`
+}
+
+func (x *GameResultIn) Reset() {
+	*x = GameResultIn{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_competition_wire_competition_proto_msgTypes[20]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GameResultIn) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GameResultIn) ProtoMessage() {}
+
+func (x *GameResultIn) ProtoReflect() protoreflect.Message {
+	mi := &file_competition_wire_competition_proto_msgTypes[20]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GameResultIn.ProtoReflect.Descriptor instead.
+func (*GameResultIn) Descriptor() ([]byte, []int) {
+	return file_competition_wire_competition_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *GameResultIn) GetGameID() string {
+	if x != nil {
+		return x.GameID
+	}
+	return ""
+}
+
+type GameResultOut struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	WinningPlayerName string `protobuf:"bytes,1,opt,name=winningPlayerName,proto3" json:"winningPlayerName,omitempty"`
+}
+
+func (x *GameResultOut) Reset() {
+	*x = GameResultOut{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_competition_wire_competition_proto_msgTypes[21]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GameResultOut) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GameResultOut) ProtoMessage() {}
+
+func (x *GameResultOut) ProtoReflect() protoreflect.Message {
+	mi := &file_competition_wire_competition_proto_msgTypes[21]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GameResultOut.ProtoReflect.Descriptor instead.
+func (*GameResultOut) Descriptor() ([]byte, []int) {
+	return file_competition_wire_competition_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *GameResultOut) GetWinningPlayerName() string {
+	if x != nil {
+		return x.WinningPlayerName
+	}
+	return ""
+}
+
 var File_competition_wire_competition_proto protoreflect.FileDescriptor
 
 var file_competition_wire_competition_proto_rawDesc = []byte{
@@ -378,7 +1080,9 @@ var file_competition_wire_competition_proto_rawDesc = []byte{
 	0x69, 0x6f, 0x6e, 0x55, 0x52, 0x4c, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02,
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x13, 0x0a, 0x11, 0x52, 0x65,
 	0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x50, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x4f, 0x75, 0x74, 0x22,
-	0x0e, 0x0a, 0x0c, 0x51, 0x75, 0x69, 0x63, 0x6b, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x49, 0x6e, 0x22,
+	0x2e, 0x0a, 0x0c, 0x51, 0x75, 0x69, 0x63, 0x6b, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x49, 0x6e, 0x12,
+	0x1e, 0x0a, 0x0a, 0x70, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x4e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x0a, 0x70, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x4e, 0x61, 0x6d, 0x65, 0x22,
 	0x3f, 0x0a, 0x0d, 0x51, 0x75, 0x69, 0x63, 0x6b, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x4f, 0x75, 0x74,
 	0x12, 0x1a, 0x0a, 0x08, 0x6d, 0x61, 0x74, 0x63, 0x68, 0x55, 0x52, 0x4c, 0x18, 0x01, 0x20, 0x01,
 	0x28, 0x09, 0x52, 0x08, 0x6d, 0x61, 0x74, 0x63, 0x68, 0x55, 0x52, 0x4c, 0x12, 0x12, 0x0a, 0x04,
@@ -388,20 +1092,91 @@ var file_competition_wire_competition_proto_rawDesc = []byte{
 	0x52, 0x04, 0x67, 0x61, 0x6d, 0x65, 0x22, 0x28, 0x0a, 0x08, 0x53, 0x70, 0x61, 0x77, 0x6e, 0x4f,
 	0x75, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x70, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x55, 0x52, 0x4c, 0x18,
 	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x70, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x55, 0x52, 0x4c,
-	0x32, 0x83, 0x01, 0x0a, 0x0d, 0x43, 0x6f, 0x6d, 0x70, 0x65, 0x74, 0x69, 0x74, 0x69, 0x6f, 0x6e,
-	0x56, 0x31, 0x12, 0x43, 0x0a, 0x18, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x50, 0x65,
-	0x72, 0x73, 0x69, 0x73, 0x74, 0x65, 0x6e, 0x74, 0x50, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x12, 0x11,
-	0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x50, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x49,
-	0x6e, 0x1a, 0x12, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x50, 0x6c, 0x61, 0x79,
-	0x65, 0x72, 0x4f, 0x75, 0x74, 0x22, 0x00, 0x12, 0x2d, 0x0a, 0x0a, 0x51, 0x75, 0x69, 0x63, 0x6b,
-	0x4d, 0x61, 0x74, 0x63, 0x68, 0x12, 0x0d, 0x2e, 0x51, 0x75, 0x69, 0x63, 0x6b, 0x4d, 0x61, 0x74,
-	0x63, 0x68, 0x49, 0x6e, 0x1a, 0x0e, 0x2e, 0x51, 0x75, 0x69, 0x63, 0x6b, 0x4d, 0x61, 0x74, 0x63,
-	0x68, 0x4f, 0x75, 0x74, 0x22, 0x00, 0x32, 0x2f, 0x0a, 0x0d, 0x4f, 0x72, 0x63, 0x68, 0x65, 0x73,
-	0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x1e, 0x0a, 0x05, 0x53, 0x70, 0x61, 0x77, 0x6e,
-	0x12, 0x08, 0x2e, 0x53, 0x70, 0x61, 0x77, 0x6e, 0x49, 0x6e, 0x1a, 0x09, 0x2e, 0x53, 0x70, 0x61,
-	0x77, 0x6e, 0x4f, 0x75, 0x74, 0x22, 0x00, 0x42, 0x12, 0x5a, 0x10, 0x63, 0x6f, 0x6d, 0x70, 0x65,
-	0x74, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x2f, 0x77, 0x69, 0x72, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x22, 0x24, 0x0a, 0x0e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x47, 0x61, 0x6d, 0x65,
+	0x49, 0x6e, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x21, 0x0a, 0x0f, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74,
+	0x65, 0x72, 0x47, 0x61, 0x6d, 0x65, 0x4f, 0x75, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0x22, 0x0a, 0x10, 0x55, 0x6e, 0x72,
+	0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x47, 0x61, 0x6d, 0x65, 0x49, 0x6e, 0x12, 0x0e, 0x0a,
+	0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0x13, 0x0a,
+	0x11, 0x55, 0x6e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x47, 0x61, 0x6d, 0x65, 0x4f,
+	0x75, 0x74, 0x22, 0x17, 0x0a, 0x15, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74,
+	0x65, 0x72, 0x65, 0x64, 0x47, 0x61, 0x6d, 0x65, 0x73, 0x49, 0x6e, 0x22, 0x4c, 0x0a, 0x0e, 0x52,
+	0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x47, 0x61, 0x6d, 0x65, 0x12, 0x12, 0x0a,
+	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d,
+	0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69,
+	0x64, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x08, 0x52, 0x06, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x22, 0x3f, 0x0a, 0x16, 0x4c, 0x69, 0x73,
+	0x74, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x47, 0x61, 0x6d, 0x65, 0x73,
+	0x4f, 0x75, 0x74, 0x12, 0x25, 0x0a, 0x05, 0x67, 0x61, 0x6d, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03,
+	0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x47,
+	0x61, 0x6d, 0x65, 0x52, 0x05, 0x67, 0x61, 0x6d, 0x65, 0x73, 0x22, 0x49, 0x0a, 0x11, 0x45, 0x6e,
+	0x67, 0x69, 0x6e, 0x65, 0x41, 0x76, 0x61, 0x69, 0x6c, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x12,
+	0x18, 0x0a, 0x07, 0x66, 0x6f, 0x72, 0x47, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x07, 0x66, 0x6f, 0x72, 0x47, 0x61, 0x6d, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x73, 0x74, 0x61,
+	0x72, 0x74, 0x55, 0x52, 0x4c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x73, 0x74, 0x61,
+	0x72, 0x74, 0x55, 0x52, 0x4c, 0x22, 0x2c, 0x0a, 0x12, 0x45, 0x6e, 0x67, 0x69, 0x6e, 0x65, 0x41,
+	0x76, 0x61, 0x69, 0x6c, 0x61, 0x62, 0x6c, 0x65, 0x4f, 0x75, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x67,
+	0x61, 0x6d, 0x65, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x67, 0x61, 0x6d,
+	0x65, 0x49, 0x44, 0x22, 0x2a, 0x0a, 0x10, 0x53, 0x69, 0x6d, 0x70, 0x6c, 0x65, 0x54, 0x65, 0x73,
+	0x74, 0x47, 0x61, 0x6d, 0x65, 0x49, 0x6e, 0x12, 0x16, 0x0a, 0x06, 0x67, 0x61, 0x6d, 0x65, 0x49,
+	0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x67, 0x61, 0x6d, 0x65, 0x49, 0x44, 0x22,
+	0x13, 0x0a, 0x11, 0x53, 0x69, 0x6d, 0x70, 0x6c, 0x65, 0x54, 0x65, 0x73, 0x74, 0x47, 0x61, 0x6d,
+	0x65, 0x4f, 0x75, 0x74, 0x22, 0x2e, 0x0a, 0x14, 0x45, 0x6e, 0x67, 0x69, 0x6e, 0x65, 0x47, 0x61,
+	0x6d, 0x65, 0x43, 0x6f, 0x6d, 0x70, 0x6c, 0x65, 0x74, 0x65, 0x49, 0x6e, 0x12, 0x16, 0x0a, 0x06,
+	0x67, 0x61, 0x6d, 0x65, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x67, 0x61,
+	0x6d, 0x65, 0x49, 0x44, 0x22, 0x17, 0x0a, 0x15, 0x45, 0x6e, 0x67, 0x69, 0x6e, 0x65, 0x47, 0x61,
+	0x6d, 0x65, 0x43, 0x6f, 0x6d, 0x70, 0x6c, 0x65, 0x74, 0x65, 0x4f, 0x75, 0x74, 0x22, 0x26, 0x0a,
+	0x0c, 0x47, 0x61, 0x6d, 0x65, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x49, 0x6e, 0x12, 0x16, 0x0a,
+	0x06, 0x67, 0x61, 0x6d, 0x65, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x67,
+	0x61, 0x6d, 0x65, 0x49, 0x44, 0x22, 0x3d, 0x0a, 0x0d, 0x47, 0x61, 0x6d, 0x65, 0x52, 0x65, 0x73,
+	0x75, 0x6c, 0x74, 0x4f, 0x75, 0x74, 0x12, 0x2c, 0x0a, 0x11, 0x77, 0x69, 0x6e, 0x6e, 0x69, 0x6e,
+	0x67, 0x50, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x4e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x11, 0x77, 0x69, 0x6e, 0x6e, 0x69, 0x6e, 0x67, 0x50, 0x6c, 0x61, 0x79, 0x65, 0x72,
+	0x4e, 0x61, 0x6d, 0x65, 0x32, 0xb2, 0x01, 0x0a, 0x0d, 0x43, 0x6f, 0x6d, 0x70, 0x65, 0x74, 0x69,
+	0x74, 0x69, 0x6f, 0x6e, 0x56, 0x31, 0x12, 0x43, 0x0a, 0x18, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74,
+	0x65, 0x72, 0x50, 0x65, 0x72, 0x73, 0x69, 0x73, 0x74, 0x65, 0x6e, 0x74, 0x50, 0x6c, 0x61, 0x79,
+	0x65, 0x72, 0x12, 0x11, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x50, 0x6c, 0x61,
+	0x79, 0x65, 0x72, 0x49, 0x6e, 0x1a, 0x12, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72,
+	0x50, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x4f, 0x75, 0x74, 0x22, 0x00, 0x12, 0x2d, 0x0a, 0x0a, 0x71,
+	0x75, 0x69, 0x63, 0x6b, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x12, 0x0d, 0x2e, 0x51, 0x75, 0x69, 0x63,
+	0x6b, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x49, 0x6e, 0x1a, 0x0e, 0x2e, 0x51, 0x75, 0x69, 0x63, 0x6b,
+	0x4d, 0x61, 0x74, 0x63, 0x68, 0x4f, 0x75, 0x74, 0x22, 0x00, 0x12, 0x2d, 0x0a, 0x0a, 0x67, 0x61,
+	0x6d, 0x65, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x12, 0x0d, 0x2e, 0x47, 0x61, 0x6d, 0x65, 0x52,
+	0x65, 0x73, 0x75, 0x6c, 0x74, 0x49, 0x6e, 0x1a, 0x0e, 0x2e, 0x47, 0x61, 0x6d, 0x65, 0x52, 0x65,
+	0x73, 0x75, 0x6c, 0x74, 0x4f, 0x75, 0x74, 0x22, 0x00, 0x32, 0x2f, 0x0a, 0x0d, 0x4f, 0x72, 0x63,
+	0x68, 0x65, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x1e, 0x0a, 0x05, 0x53, 0x70,
+	0x61, 0x77, 0x6e, 0x12, 0x08, 0x2e, 0x53, 0x70, 0x61, 0x77, 0x6e, 0x49, 0x6e, 0x1a, 0x09, 0x2e,
+	0x53, 0x70, 0x61, 0x77, 0x6e, 0x4f, 0x75, 0x74, 0x22, 0x00, 0x32, 0xc8, 0x01, 0x0a, 0x0c, 0x47,
+	0x61, 0x6d, 0x65, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x12, 0x33, 0x0a, 0x0c, 0x72,
+	0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x47, 0x61, 0x6d, 0x65, 0x12, 0x0f, 0x2e, 0x52, 0x65,
+	0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x47, 0x61, 0x6d, 0x65, 0x49, 0x6e, 0x1a, 0x10, 0x2e, 0x52,
+	0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x47, 0x61, 0x6d, 0x65, 0x4f, 0x75, 0x74, 0x22, 0x00,
+	0x12, 0x39, 0x0a, 0x0e, 0x75, 0x6e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x47, 0x61,
+	0x6d, 0x65, 0x12, 0x11, 0x2e, 0x55, 0x6e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x47,
+	0x61, 0x6d, 0x65, 0x49, 0x6e, 0x1a, 0x12, 0x2e, 0x55, 0x6e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74,
+	0x65, 0x72, 0x47, 0x61, 0x6d, 0x65, 0x4f, 0x75, 0x74, 0x22, 0x00, 0x12, 0x48, 0x0a, 0x13, 0x6c,
+	0x69, 0x73, 0x74, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x47, 0x61, 0x6d,
+	0x65, 0x73, 0x12, 0x16, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65,
+	0x72, 0x65, 0x64, 0x47, 0x61, 0x6d, 0x65, 0x73, 0x49, 0x6e, 0x1a, 0x17, 0x2e, 0x4c, 0x69, 0x73,
+	0x74, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x47, 0x61, 0x6d, 0x65, 0x73,
+	0x4f, 0x75, 0x74, 0x22, 0x00, 0x32, 0x98, 0x01, 0x0a, 0x17, 0x47, 0x61, 0x6d, 0x65, 0x45, 0x6e,
+	0x67, 0x69, 0x6e, 0x65, 0x4f, 0x72, 0x63, 0x68, 0x65, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x12, 0x3c, 0x0a, 0x0f, 0x65, 0x6e, 0x67, 0x69, 0x6e, 0x65, 0x41, 0x76, 0x61, 0x69, 0x6c,
+	0x61, 0x62, 0x6c, 0x65, 0x12, 0x12, 0x2e, 0x45, 0x6e, 0x67, 0x69, 0x6e, 0x65, 0x41, 0x76, 0x61,
+	0x69, 0x6c, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x1a, 0x13, 0x2e, 0x45, 0x6e, 0x67, 0x69, 0x6e,
+	0x65, 0x41, 0x76, 0x61, 0x69, 0x6c, 0x61, 0x62, 0x6c, 0x65, 0x4f, 0x75, 0x74, 0x22, 0x00, 0x12,
+	0x3f, 0x0a, 0x0c, 0x67, 0x61, 0x6d, 0x65, 0x43, 0x6f, 0x6d, 0x70, 0x6c, 0x65, 0x74, 0x65, 0x12,
+	0x15, 0x2e, 0x45, 0x6e, 0x67, 0x69, 0x6e, 0x65, 0x47, 0x61, 0x6d, 0x65, 0x43, 0x6f, 0x6d, 0x70,
+	0x6c, 0x65, 0x74, 0x65, 0x49, 0x6e, 0x1a, 0x16, 0x2e, 0x45, 0x6e, 0x67, 0x69, 0x6e, 0x65, 0x47,
+	0x61, 0x6d, 0x65, 0x43, 0x6f, 0x6d, 0x70, 0x6c, 0x65, 0x74, 0x65, 0x4f, 0x75, 0x74, 0x22, 0x00,
+	0x32, 0x4d, 0x0a, 0x15, 0x53, 0x69, 0x6d, 0x70, 0x6c, 0x65, 0x54, 0x65, 0x73, 0x74, 0x47, 0x61,
+	0x6d, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x34, 0x0a, 0x09, 0x63, 0x6f, 0x6e,
+	0x6e, 0x65, 0x63, 0x74, 0x65, 0x64, 0x12, 0x11, 0x2e, 0x53, 0x69, 0x6d, 0x70, 0x6c, 0x65, 0x54,
+	0x65, 0x73, 0x74, 0x47, 0x61, 0x6d, 0x65, 0x49, 0x6e, 0x1a, 0x12, 0x2e, 0x53, 0x69, 0x6d, 0x70,
+	0x6c, 0x65, 0x54, 0x65, 0x73, 0x74, 0x47, 0x61, 0x6d, 0x65, 0x4f, 0x75, 0x74, 0x22, 0x00, 0x42,
+	0x12, 0x5a, 0x10, 0x63, 0x6f, 0x6d, 0x70, 0x65, 0x74, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x2f, 0x77,
+	0x69, 0x72, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -416,29 +1191,59 @@ func file_competition_wire_competition_proto_rawDescGZIP() []byte {
 	return file_competition_wire_competition_proto_rawDescData
 }
 
-var file_competition_wire_competition_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_competition_wire_competition_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
 var file_competition_wire_competition_proto_goTypes = []any{
-	(*UUID)(nil),              // 0: UUID
-	(*RegisterPlayerIn)(nil),  // 1: RegisterPlayerIn
-	(*RegisterPlayerOut)(nil), // 2: RegisterPlayerOut
-	(*QuickMatchIn)(nil),      // 3: QuickMatchIn
-	(*QuickMatchOut)(nil),     // 4: QuickMatchOut
-	(*SpawnIn)(nil),           // 5: SpawnIn
-	(*SpawnOut)(nil),          // 6: SpawnOut
+	(*UUID)(nil),                   // 0: UUID
+	(*RegisterPlayerIn)(nil),       // 1: RegisterPlayerIn
+	(*RegisterPlayerOut)(nil),      // 2: RegisterPlayerOut
+	(*QuickMatchIn)(nil),           // 3: QuickMatchIn
+	(*QuickMatchOut)(nil),          // 4: QuickMatchOut
+	(*SpawnIn)(nil),                // 5: SpawnIn
+	(*SpawnOut)(nil),               // 6: SpawnOut
+	(*RegisterGameIn)(nil),         // 7: RegisterGameIn
+	(*RegisterGameOut)(nil),        // 8: RegisterGameOut
+	(*UnregisterGameIn)(nil),       // 9: UnregisterGameIn
+	(*UnregisterGameOut)(nil),      // 10: UnregisterGameOut
+	(*ListRegisteredGamesIn)(nil),  // 11: ListRegisteredGamesIn
+	(*RegisteredGame)(nil),         // 12: RegisteredGame
+	(*ListRegisteredGamesOut)(nil), // 13: ListRegisteredGamesOut
+	(*EngineAvailableIn)(nil),      // 14: EngineAvailableIn
+	(*EngineAvailableOut)(nil),     // 15: EngineAvailableOut
+	(*SimpleTestGameIn)(nil),       // 16: SimpleTestGameIn
+	(*SimpleTestGameOut)(nil),      // 17: SimpleTestGameOut
+	(*EngineGameCompleteIn)(nil),   // 18: EngineGameCompleteIn
+	(*EngineGameCompleteOut)(nil),  // 19: EngineGameCompleteOut
+	(*GameResultIn)(nil),           // 20: GameResultIn
+	(*GameResultOut)(nil),          // 21: GameResultOut
 }
 var file_competition_wire_competition_proto_depIdxs = []int32{
-	0, // 0: SpawnIn.game:type_name -> UUID
-	1, // 1: CompetitionV1.RegisterPersistentPlayer:input_type -> RegisterPlayerIn
-	3, // 2: CompetitionV1.QuickMatch:input_type -> QuickMatchIn
-	5, // 3: Orchestration.Spawn:input_type -> SpawnIn
-	2, // 4: CompetitionV1.RegisterPersistentPlayer:output_type -> RegisterPlayerOut
-	4, // 5: CompetitionV1.QuickMatch:output_type -> QuickMatchOut
-	6, // 6: Orchestration.Spawn:output_type -> SpawnOut
-	4, // [4:7] is the sub-list for method output_type
-	1, // [1:4] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	0,  // 0: SpawnIn.game:type_name -> UUID
+	12, // 1: ListRegisteredGamesOut.games:type_name -> RegisteredGame
+	1,  // 2: CompetitionV1.registerPersistentPlayer:input_type -> RegisterPlayerIn
+	3,  // 3: CompetitionV1.quickMatch:input_type -> QuickMatchIn
+	20, // 4: CompetitionV1.gameResult:input_type -> GameResultIn
+	5,  // 5: Orchestration.Spawn:input_type -> SpawnIn
+	7,  // 6: GameRegistry.registerGame:input_type -> RegisterGameIn
+	9,  // 7: GameRegistry.unregisterGame:input_type -> UnregisterGameIn
+	11, // 8: GameRegistry.listRegisteredGames:input_type -> ListRegisteredGamesIn
+	14, // 9: GameEngineOrchestration.engineAvailable:input_type -> EngineAvailableIn
+	18, // 10: GameEngineOrchestration.gameComplete:input_type -> EngineGameCompleteIn
+	16, // 11: SimpleTestGameService.connected:input_type -> SimpleTestGameIn
+	2,  // 12: CompetitionV1.registerPersistentPlayer:output_type -> RegisterPlayerOut
+	4,  // 13: CompetitionV1.quickMatch:output_type -> QuickMatchOut
+	21, // 14: CompetitionV1.gameResult:output_type -> GameResultOut
+	6,  // 15: Orchestration.Spawn:output_type -> SpawnOut
+	8,  // 16: GameRegistry.registerGame:output_type -> RegisterGameOut
+	10, // 17: GameRegistry.unregisterGame:output_type -> UnregisterGameOut
+	13, // 18: GameRegistry.listRegisteredGames:output_type -> ListRegisteredGamesOut
+	15, // 19: GameEngineOrchestration.engineAvailable:output_type -> EngineAvailableOut
+	19, // 20: GameEngineOrchestration.gameComplete:output_type -> EngineGameCompleteOut
+	17, // 21: SimpleTestGameService.connected:output_type -> SimpleTestGameOut
+	12, // [12:22] is the sub-list for method output_type
+	2,  // [2:12] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_competition_wire_competition_proto_init() }
@@ -531,6 +1336,186 @@ func file_competition_wire_competition_proto_init() {
 				return nil
 			}
 		}
+		file_competition_wire_competition_proto_msgTypes[7].Exporter = func(v any, i int) any {
+			switch v := v.(*RegisterGameIn); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_competition_wire_competition_proto_msgTypes[8].Exporter = func(v any, i int) any {
+			switch v := v.(*RegisterGameOut); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_competition_wire_competition_proto_msgTypes[9].Exporter = func(v any, i int) any {
+			switch v := v.(*UnregisterGameIn); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_competition_wire_competition_proto_msgTypes[10].Exporter = func(v any, i int) any {
+			switch v := v.(*UnregisterGameOut); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_competition_wire_competition_proto_msgTypes[11].Exporter = func(v any, i int) any {
+			switch v := v.(*ListRegisteredGamesIn); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_competition_wire_competition_proto_msgTypes[12].Exporter = func(v any, i int) any {
+			switch v := v.(*RegisteredGame); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_competition_wire_competition_proto_msgTypes[13].Exporter = func(v any, i int) any {
+			switch v := v.(*ListRegisteredGamesOut); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_competition_wire_competition_proto_msgTypes[14].Exporter = func(v any, i int) any {
+			switch v := v.(*EngineAvailableIn); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_competition_wire_competition_proto_msgTypes[15].Exporter = func(v any, i int) any {
+			switch v := v.(*EngineAvailableOut); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_competition_wire_competition_proto_msgTypes[16].Exporter = func(v any, i int) any {
+			switch v := v.(*SimpleTestGameIn); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_competition_wire_competition_proto_msgTypes[17].Exporter = func(v any, i int) any {
+			switch v := v.(*SimpleTestGameOut); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_competition_wire_competition_proto_msgTypes[18].Exporter = func(v any, i int) any {
+			switch v := v.(*EngineGameCompleteIn); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_competition_wire_competition_proto_msgTypes[19].Exporter = func(v any, i int) any {
+			switch v := v.(*EngineGameCompleteOut); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_competition_wire_competition_proto_msgTypes[20].Exporter = func(v any, i int) any {
+			switch v := v.(*GameResultIn); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_competition_wire_competition_proto_msgTypes[21].Exporter = func(v any, i int) any {
+			switch v := v.(*GameResultOut); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	file_competition_wire_competition_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
@@ -539,9 +1524,9 @@ func file_competition_wire_competition_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_competition_wire_competition_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   22,
 			NumExtensions: 0,
-			NumServices:   2,
+			NumServices:   5,
 		},
 		GoTypes:           file_competition_wire_competition_proto_goTypes,
 		DependencyIndexes: file_competition_wire_competition_proto_depIdxs,

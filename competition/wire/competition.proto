@@ -9,12 +9,14 @@ service CompetitionV1 {
    * Registers the given player as a persistent service based player.  When a challenger appears the matching system
    * will notify the registered player.
    */
-  rpc RegisterPersistentPlayer(RegisterPlayerIn) returns (RegisterPlayerOut) {}
+  rpc registerPersistentPlayer(RegisterPlayerIn) returns (RegisterPlayerOut) {}
   /*
    * QuickMatch seeks a match with another waiting player or a registered persistent player.  No guarantees are made
    * for the given match beyond anther player.
    */
-  rpc QuickMatch(QuickMatchIn) returns (QuickMatchOut) {}
+  rpc quickMatch(QuickMatchIn) returns (QuickMatchOut) {}
+
+  rpc gameResult(GameResultIn) returns (GameResultOut) {}
 }
 
 message UUID {
@@ -40,6 +42,7 @@ message RegisterPlayerOut {
 }
 
 message QuickMatchIn {
+  string playerName = 1;
 }
 
 /*
@@ -69,4 +72,77 @@ message SpawnIn {
 
 message SpawnOut {
   string playerURL = 1;
+}
+
+/*
+ * GameRegistry is an administration plane system for manging which games are available and their execution mechanisms.
+ */
+service GameRegistry {
+  rpc registerGame(RegisterGameIn) returns (RegisterGameOut) {}
+  rpc unregisterGame(UnregisterGameIn) returns (UnregisterGameOut) {}
+  rpc listRegisteredGames(ListRegisteredGamesIn) returns (ListRegisteredGamesOut) {}
+}
+
+message RegisterGameIn {
+  string name = 1;
+}
+
+message RegisterGameOut {
+  string id = 1;
+}
+
+message UnregisterGameIn {
+  string id = 1;
+}
+
+message UnregisterGameOut {
+}
+
+message ListRegisteredGamesIn {
+}
+
+message RegisteredGame {
+  string name = 1;
+  string id = 2;
+  bool active = 3;
+}
+
+message ListRegisteredGamesOut {
+  repeated RegisteredGame games = 1;
+}
+
+service GameEngineOrchestration {
+  rpc engineAvailable(EngineAvailableIn) returns (EngineAvailableOut) {}
+  rpc gameComplete(EngineGameCompleteIn) returns (EngineGameCompleteOut) {}
+}
+
+message EngineAvailableIn {
+  string forGame = 1;
+  string startURL = 2;
+}
+
+message EngineAvailableOut {
+  string gameID = 1;
+}
+
+service SimpleTestGameService {
+  rpc connected(SimpleTestGameIn) returns (SimpleTestGameOut) {}
+}
+
+message SimpleTestGameIn {
+  string gameID = 1;
+}
+message SimpleTestGameOut {}
+
+message EngineGameCompleteIn {
+  string gameID = 1;
+}
+message EngineGameCompleteOut {}
+
+message GameResultIn {
+  string gameID = 1;
+}
+
+message GameResultOut {
+  string winningPlayerName = 1;
 }
