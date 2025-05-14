@@ -61,21 +61,6 @@ message QuickMatchOut {
 }
 
 /*
- * Orchestration is a player provided service for
- */
-service Orchestration {
-  rpc Spawn(SpawnIn) returns (SpawnOut) {}
-}
-
-message SpawnIn {
-  UUID game = 1;
-}
-
-message SpawnOut {
-  string playerURL = 1;
-}
-
-/*
  * GameRegistry is an administration plane system for manging which games are available and their execution mechanisms.
  */
 service GameRegistry {
