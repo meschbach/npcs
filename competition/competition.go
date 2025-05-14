@@ -6,7 +6,6 @@ import (
 	"github.com/meschbach/npcs/competition/wire"
 	"github.com/thejerf/suture/v4"
 	"google.golang.org/grpc"
-	"sync"
 )
 
 type SystemEventKind int
@@ -21,18 +20,16 @@ type System struct {
 	auth           Auth
 	tls            *tls.Config
 	Events         chan SystemEventKind
+	core           *matcher
 }
 
 func (s *System) Serve(ctx context.Context) error {
 	v1 := &clientCompetitionService{
-		auth:         s.auth,
-		lock:         sync.Mutex{},
-		persistent:   make(map[string]*persistentPlayer),
-		gameResult:   make(map[string]*completedGameResult),
-		t3MatchesURL: s.serviceAddress,
+		auth: s.auth,
+		core: s.core,
 	}
-	registry := NewGameRegistryService()
-	enginePlaneOrchestration := newEngines(registry)
+	registry := newGameRegistryService(s.core)
+	enginePlaneOrchestration := newEngines(s.core)
 
 	listener, err := s.network.Listener(ctx, s.serviceAddress, func(ctx context.Context, server *grpc.Server) error {
 		wire.RegisterCompetitionV1Server(server, v1)
@@ -52,6 +49,7 @@ func (s *System) Serve(ctx context.Context) error {
 	}
 }
 
+// todo remove this structure
 type grpcEventAdapter struct {
 	source chan GRPCEventKind
 	target chan SystemEventKind
@@ -79,6 +77,7 @@ func NewCompetitionSystem(auth Auth, listenAt string, onNetwork GRPCNetwork, tls
 		auth:           auth,
 		tls:            tlsConfig,
 		Events:         make(chan SystemEventKind, 4),
+		core:           newMatcher(),
 	}
 }
 

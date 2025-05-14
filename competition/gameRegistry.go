@@ -2,62 +2,37 @@ package competition
 
 import (
 	"context"
-	"errors"
-	"github.com/google/uuid"
 	"github.com/meschbach/npcs/competition/wire"
-	"sync"
 )
 
-type registeredGame struct {
-	id string
-}
-
-type GameRegistryService struct {
+type gameRegistryService struct {
 	wire.UnimplementedGameRegistryServer
-	state *sync.Mutex
-	games map[string]registeredGame
+	core *matcher
 }
 
-func NewGameRegistryService() *GameRegistryService {
-	return &GameRegistryService{
-		games: make(map[string]registeredGame),
-		state: &sync.Mutex{},
+func newGameRegistryService(core *matcher) *gameRegistryService {
+	return &gameRegistryService{
+		core: core,
 	}
 }
 
-func (g *GameRegistryService) ListRegisteredGames(ctx context.Context, in *wire.ListRegisteredGamesIn) (*wire.ListRegisteredGamesOut, error) {
-	g.state.Lock()
-	defer g.state.Unlock()
+func (g *gameRegistryService) ListRegisteredGames(ctx context.Context, in *wire.ListRegisteredGamesIn) (*wire.ListRegisteredGamesOut, error) {
+	g.core.state.Lock()
+	defer g.core.state.Unlock()
+
 	out := &wire.ListRegisteredGamesOut{}
-	for name, game := range g.games {
+	for name, _ := range g.core.gameMatches {
 		out.Games = append(out.Games, &wire.RegisteredGame{
 			Name: name,
-			Id:   game.id,
+			Id:   name,
 		})
 	}
 	return out, nil
 }
 
-func (g *GameRegistryService) RegisterGame(ctx context.Context, in *wire.RegisterGameIn) (*wire.RegisterGameOut, error) {
-	g.state.Lock()
-	defer g.state.Unlock()
-	if _, exists := g.games[in.Name]; exists {
-		return nil, errors.New("game already registered")
-	}
-	structuredID, err := uuid.NewV7()
-	if err != nil {
-		return nil, err
-	}
-	id := structuredID.String()
-	g.games[in.Name] = registeredGame{id: id}
+func (g *gameRegistryService) RegisterGame(ctx context.Context, in *wire.RegisterGameIn) (*wire.RegisterGameOut, error) {
+	err := g.core.ensureGame(ctx, in.Name)
 	return &wire.RegisterGameOut{
-		Id: id,
-	}, nil
-}
-
-func (g *GameRegistryService) findGame(name string) (bool, error) {
-	g.state.Lock()
-	defer g.state.Unlock()
-	_, has := g.games[name]
-	return has, nil
+		Id: in.Name,
+	}, err
 }

@@ -1,0 +1,12 @@
+syntax = "proto3";
+option go_package = "competition/simple";
+
+service SimpleGame {
+  rpc joined(JoinedIn) returns (JoinedOut) {}
+}
+
+message JoinedIn {}
+
+message JoinedOut {
+  bool won = 1;
+}

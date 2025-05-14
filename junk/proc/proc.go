@@ -2,6 +2,7 @@ package proc
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,28 +14,36 @@ type Component interface {
 	Stop(context.Context) error
 }
 
-// Run initializes and starts the given component, manages lifecycle signals, and handles proper shutdown operations.
-func Run(c Component) error {
+// AsService initializes and starts the given component, manages lifecycle signals, and handles proper shutdown operations.
+func AsService(c Component) error {
 	procContext, closeProc := context.WithCancel(context.Background())
 	defer closeProc()
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM, syscall.SIGSTOP)
 
-	if err := runStartup(procContext, c); err != nil {
-		return err
+	startupProblem := make(chan error, 1)
+	startupContext, startupCancel := context.WithCancel(procContext)
+	go func() {
+		defer startupCancel()
+		startupProblem <- c.Start(startupContext, procContext)
+	}()
+
+	select {
+	case err := <-startupProblem:
+		if err != nil {
+			return err
+		}
+	case <-signals:
+		startupCancel()
+		return <-startupProblem
 	}
 
-	<-signals
+	sig := <-signals
+	fmt.Printf("Received signal: %v, exiting\n", sig)
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	return c.Stop(shutdownCtx)
-}
-
-func runStartup(procContext context.Context, c Component) error {
-	startupContext, startupCancel := context.WithCancel(procContext)
-	defer startupCancel()
-	return c.Start(startupContext, procContext)
 }

@@ -42,7 +42,8 @@ message RegisterPlayerOut {
 }
 
 message QuickMatchIn {
-  string playerName = 1;
+  string game = 1;
+  string playerName = 2;
 }
 
 /*

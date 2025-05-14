@@ -2,8 +2,8 @@ package competition
 
 import (
 	"context"
-	"fmt"
 	"google.golang.org/grpc"
+	"log/slog"
 	"net"
 )
 
@@ -45,7 +45,7 @@ func (g *gRPCListener) Start(ctx context.Context) error {
 	}
 	g.listener = lis
 
-	fmt.Printf("Listening at %s (resvoled %q)\n", g.address, lis.Addr().String())
+	slog.InfoContext(ctx, "gRPC service starting\n", "address.given", g.address, "address.resolved", lis.Addr().String())
 	g.server = grpc.NewServer(g.options...)
 	if err := g.registrar(ctx, g.server); err != nil {
 		return err

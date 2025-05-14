@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/meschbach/npcs/competition"
-	"github.com/meschbach/npcs/junk/proc"
+	"github.com/meschbach/npcs/junk/proc/tproc"
 	"github.com/spf13/cobra"
 	"github.com/thejerf/suture/v4"
 	"os"
@@ -44,7 +44,7 @@ func daemonCommand() *cobra.Command {
 		Short: "Launches daemon for competitions",
 		Run: func(cmd *cobra.Command, args []string) {
 			c := competition.NewCompetitionSystem(nil, "localhost:11234", competition.NetworkedGRPC, nil)
-			if err := proc.Run(&Daemon{c: c}); err != nil {
+			if err := tproc.AsService(&Daemon{c: c}); err != nil {
 				_, e := fmt.Fprintf(os.Stderr, "failed to run process because %e", err)
 				if e != nil {
 					panic(e)
