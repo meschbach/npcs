@@ -15,8 +15,6 @@ service CompetitionV1 {
    * for the given match beyond anther player.
    */
   rpc quickMatch(QuickMatchIn) returns (QuickMatchOut) {}
-
-  rpc gameResult(GameResultIn) returns (GameResultOut) {}
 }
 
 message UUID {

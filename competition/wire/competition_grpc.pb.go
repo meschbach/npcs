@@ -21,7 +21,6 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	CompetitionV1_RegisterPersistentPlayer_FullMethodName = "/CompetitionV1/registerPersistentPlayer"
 	CompetitionV1_QuickMatch_FullMethodName               = "/CompetitionV1/quickMatch"
-	CompetitionV1_GameResult_FullMethodName               = "/CompetitionV1/gameResult"
 )
 
 // CompetitionV1Client is the client API for CompetitionV1 service.
@@ -36,7 +35,6 @@ type CompetitionV1Client interface {
 	// QuickMatch seeks a match with another waiting player or a registered persistent player.  No guarantees are made
 	// for the given match beyond anther player.
 	QuickMatch(ctx context.Context, in *QuickMatchIn, opts ...grpc.CallOption) (*QuickMatchOut, error)
-	GameResult(ctx context.Context, in *GameResultIn, opts ...grpc.CallOption) (*GameResultOut, error)
 }
 
 type competitionV1Client struct {
@@ -67,16 +65,6 @@ func (c *competitionV1Client) QuickMatch(ctx context.Context, in *QuickMatchIn, 
 	return out, nil
 }
 
-func (c *competitionV1Client) GameResult(ctx context.Context, in *GameResultIn, opts ...grpc.CallOption) (*GameResultOut, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GameResultOut)
-	err := c.cc.Invoke(ctx, CompetitionV1_GameResult_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // CompetitionV1Server is the server API for CompetitionV1 service.
 // All implementations must embed UnimplementedCompetitionV1Server
 // for forward compatibility.
@@ -89,7 +77,6 @@ type CompetitionV1Server interface {
 	// QuickMatch seeks a match with another waiting player or a registered persistent player.  No guarantees are made
 	// for the given match beyond anther player.
 	QuickMatch(context.Context, *QuickMatchIn) (*QuickMatchOut, error)
-	GameResult(context.Context, *GameResultIn) (*GameResultOut, error)
 	mustEmbedUnimplementedCompetitionV1Server()
 }
 
@@ -105,9 +92,6 @@ func (UnimplementedCompetitionV1Server) RegisterPersistentPlayer(context.Context
 }
 func (UnimplementedCompetitionV1Server) QuickMatch(context.Context, *QuickMatchIn) (*QuickMatchOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QuickMatch not implemented")
-}
-func (UnimplementedCompetitionV1Server) GameResult(context.Context, *GameResultIn) (*GameResultOut, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GameResult not implemented")
 }
 func (UnimplementedCompetitionV1Server) mustEmbedUnimplementedCompetitionV1Server() {}
 func (UnimplementedCompetitionV1Server) testEmbeddedByValue()                       {}
@@ -166,24 +150,6 @@ func _CompetitionV1_QuickMatch_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CompetitionV1_GameResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GameResultIn)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CompetitionV1Server).GameResult(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: CompetitionV1_GameResult_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CompetitionV1Server).GameResult(ctx, req.(*GameResultIn))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // CompetitionV1_ServiceDesc is the grpc.ServiceDesc for CompetitionV1 service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -198,10 +164,6 @@ var CompetitionV1_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "quickMatch",
 			Handler:    _CompetitionV1_QuickMatch_Handler,
-		},
-		{
-			MethodName: "gameResult",
-			Handler:    _CompetitionV1_GameResult_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
