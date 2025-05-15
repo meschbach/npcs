@@ -2,44 +2,35 @@ package integtest
 
 import (
 	"context"
-	"github.com/meschbach/npcs/competition/wire"
-	"github.com/stretchr/testify/assert"
+	"github.com/meschbach/npcs/competition"
+	"github.com/meschbach/npcs/competition/simple"
+	"github.com/meschbach/npcs/junk/inProc"
 	"github.com/stretchr/testify/require"
 	"testing"
+	"time"
 )
 
 func TestSimpleOneOffGame(t *testing.T) {
-	WithCompetitionSystem(t, func(ctx context.Context, t *testing.T, h *Harness) {
-		//Given an existing player
-		player1Token, _ := h.Auth.NewUser(ctx, t, "player 1")
-		player1 := h.NewClient(player1Token)
+	sysContext, sysDone := context.WithTimeout(context.Background(), 10*time.Second)
+	defer sysDone()
 
-		// with a registered persistent player
-		_, err := player1.RegisterPersistentPlayer(ctx, &wire.RegisterPlayerIn{
-			OrchestrationURL: "player-1.npcs:1234",
-			Name:             "persistent",
-		})
-		require.NoError(t, err)
+	matcherAddress := "competition.npcs:12345"
+	net := inProc.NewGRPCNetwork(t)
+	competitionSystem := competition.NewCompetitionSystem(nil, matcherAddress, net, nil)
+	go func() {
+		require.NoError(t, competitionSystem.Serve(sysContext))
+	}()
+	competitionSystem.WaitForReady()
 
-		/// When we attempt to schedule a quick match
-		quickMatchName := "quick-match-player"
-		result, err := player1.QuickMatch(ctx, &wire.QuickMatchIn{
-			PlayerName: quickMatchName,
-		})
-		require.NoError(t, err)
+	instance := simple.NewRunOnceInstance(
+		simple.WithInstanceNetwork(net),
+		simple.WithInstanceAddress("game-1.simple.npcs:12345"),
+		simple.WithInstanceMatcherAddress(matcherAddress),
+	)
+	require.NoError(t, instance.Run(sysContext))
 
-		require.NotNil(t, result)
-		assert.NotEmpty(t, result.MatchURL)
-
-		// and constructs a new simple test service client
-		simpleGameAddress := h.internet.Connect(ctx, "in-proc://"+result.MatchURL)
-		simpleGameClient := wire.NewSimpleTestGameServiceClient(simpleGameAddress)
-		_, err = simpleGameClient.Connected(ctx, &wire.SimpleTestGameIn{GameID: result.UUID})
-		require.NoError(t, err)
-
-		// then the quick match name should have been recorded as the winner
-		gameResult, err := player1.GameResult(ctx, &wire.GameResultIn{GameID: result.UUID})
-		require.NoError(t, err)
-		assert.Equal(t, gameResult.WinningPlayerName, quickMatchName)
-	})
+	player1 := simple.NewRunOnce(simple.WithPlayerNetwork(net), simple.WithPlayerMatcherAddress(matcherAddress))
+	go func() { require.NoError(t, player1.Run(sysContext)) }()
+	player2 := simple.NewRunOnce(simple.WithPlayerNetwork(net), simple.WithPlayerMatcherAddress(matcherAddress))
+	go func() { require.NoError(t, player2.Run(sysContext)) }()
 }

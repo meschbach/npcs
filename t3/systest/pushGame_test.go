@@ -25,7 +25,7 @@ func TestPushGame(t *testing.T) {
 
 	gateway := network.NewPush()
 
-	net := inProc.NewTestGRPCLayer(t)
+	net := inProc.NewGRPCNetwork(t)
 	physSrv := net.SpawnService(ctx, "push.npcs:54321", func(ctx context.Context, srv *grpc.Server) error {
 		network.RegisterT3PushServer(srv, gateway)
 		return nil

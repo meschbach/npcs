@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/meschbach/npcs/competition"
 	"github.com/meschbach/npcs/competition/wire"
+	"github.com/meschbach/npcs/junk/realnet"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -13,7 +13,7 @@ func enginesAvailable(cmd *cobra.Command, args []string) {
 	game, service := args[0], args[1]
 
 	ctx := cmd.Context()
-	net := competition.NetworkedGRPC
+	net := realnet.NetworkedGRPC
 	clientWire, err := net.Client(ctx, "127.0.0.1:11234", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		fmt.Printf("Failed to connect because %s\n", err)

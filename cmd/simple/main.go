@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/meschbach/npcs/competition"
 	"github.com/meschbach/npcs/competition/simple"
 	"github.com/meschbach/npcs/competition/wire"
 	"github.com/meschbach/npcs/junk/proc/tproc"
+	"github.com/meschbach/npcs/junk/realnet"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -18,7 +18,7 @@ type playerInstance struct {
 }
 
 func (p *playerInstance) run(ctx context.Context) error {
-	net := competition.NetworkedGRPC
+	net := realnet.NetworkedGRPC
 	competitionClientWire, err := net.Client(ctx, "127.0.0.1:11234", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
@@ -56,7 +56,7 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			i := &playerInstance{}
 			if err := tproc.RunOnce("simple-game-client", i.run); err != nil {
-				slog.Error("tproc.AsService failed: %s\n", err)
+				slog.Error("tproc.AsService failed", "error", err)
 			}
 		},
 	}

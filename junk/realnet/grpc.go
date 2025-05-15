@@ -1,24 +1,25 @@
-package competition
+package realnet
 
 import (
 	"context"
+	junk2 "github.com/meschbach/npcs/junk"
 	"google.golang.org/grpc"
 	"log/slog"
 	"net"
 )
 
-type GRPCRegistratar func(ctx context.Context, server *grpc.Server) error
+type GRPCRegister func(ctx context.Context, server *grpc.Server) error
 
 // GRPCNetwork is a seam for testing.
 type GRPCNetwork interface {
-	Listener(ctx context.Context, address string, registratar GRPCRegistratar, options ...grpc.ServerOption) (Component, error)
+	Listener(ctx context.Context, address string, register GRPCRegister, options ...grpc.ServerOption) (junk2.Component, error)
 	Client(ctx context.Context, address string, options ...grpc.DialOption) (*grpc.ClientConn, error)
 }
 
 // RealGRPCNetwork is a concrete implementation for managing gRPC network listeners and clients.
 type RealGRPCNetwork struct{}
 
-func (r *RealGRPCNetwork) Listener(ctx context.Context, address string, registrar GRPCRegistratar, options ...grpc.ServerOption) (Component, error) {
+func (r *RealGRPCNetwork) Listener(ctx context.Context, address string, registrar GRPCRegister, options ...grpc.ServerOption) (junk2.Component, error) {
 	return &gRPCListener{
 		address:   address,
 		registrar: registrar,
@@ -32,7 +33,7 @@ func (r *RealGRPCNetwork) Client(ctx context.Context, address string, options ..
 
 type gRPCListener struct {
 	address   string
-	registrar GRPCRegistratar
+	registrar GRPCRegister
 	options   []grpc.ServerOption
 	server    *grpc.Server
 	listener  net.Listener

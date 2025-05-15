@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/meschbach/npcs/competition"
 	"github.com/meschbach/npcs/competition/simple"
 	"github.com/meschbach/npcs/competition/wire"
+	"github.com/meschbach/npcs/junk"
 	"github.com/meschbach/npcs/junk/proc"
+	junk2 "github.com/meschbach/npcs/junk/realnet"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -15,15 +16,15 @@ import (
 )
 
 type gameInstance struct {
-	s competition.Component
+	s junk.Component
 }
 
 func (g *gameInstance) Start(setup context.Context, run context.Context) error {
 	// build service
-	game := simple.NewGameService("")
+	game := simple.NewGameService()
 
 	// export service
-	net := competition.NetworkedGRPC
+	net := junk2.NetworkedGRPC
 	if service, err := net.Listener(setup, "127.0.0.1:11235", func(ctx context.Context, server *grpc.Server) error {
 		simple.RegisterSimpleGameServer(server, game)
 		return nil

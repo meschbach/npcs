@@ -15,7 +15,7 @@ type GameService struct {
 	joinedCount  int
 }
 
-func NewGameService(winnerID string) *GameService {
+func NewGameService() *GameService {
 	s := &sync.Mutex{}
 	return &GameService{
 		state:        s,

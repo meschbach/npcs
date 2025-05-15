@@ -6,18 +6,22 @@ import (
 	"errors"
 	"fmt"
 	"github.com/madflojo/testcerts"
+	"github.com/meschbach/npcs/junk"
+	"github.com/meschbach/npcs/junk/realnet"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/resolver"
 	"google.golang.org/grpc/resolver/manual"
+	"log/slog"
+	"net"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 )
 
-type TestGRPCLayer struct {
+type GRPCNetwork struct {
 	t                 *testing.T
 	physicalTransport *Network
 	publicKeyInfra    *testcerts.CertificateAuthority
@@ -29,8 +33,8 @@ type TestGRPCLayer struct {
 	resolver        *manual.Resolver
 }
 
-func NewTestGRPCLayer(t *testing.T, opts ...TestGRPCOptionFunc) *TestGRPCLayer {
-	layer := &TestGRPCLayer{
+func NewGRPCNetwork(t *testing.T, opts ...GRPCOption) *GRPCNetwork {
+	layer := &GRPCNetwork{
 		t:                 t,
 		publicKeyInfra:    testcerts.NewCA(),
 		physicalTransport: NewNetwork(),
@@ -44,15 +48,23 @@ func NewTestGRPCLayer(t *testing.T, opts ...TestGRPCOptionFunc) *TestGRPCLayer {
 	return layer
 }
 
-type TestGRPCOptionFunc func(*TestGRPCLayer)
+type GRPCOption func(*GRPCNetwork)
 
-func WithNetwork(net *Network) TestGRPCOptionFunc {
-	return func(test *TestGRPCLayer) {
+func WithNetwork(net *Network) GRPCOption {
+	return func(test *GRPCNetwork) {
 		test.physicalTransport = net
 	}
 }
 
-func (t *TestGRPCLayer) SpawnService(ctx context.Context, address string, register func(ctx context.Context, srv *grpc.Server) error, otherOptions ...grpc.ServerOption) *TestListener {
+func (t *GRPCNetwork) Listener(ctx context.Context, address string, registratar realnet.GRPCRegister, options ...grpc.ServerOption) (junk.Component, error) {
+	return t.SpawnService(ctx, address, registratar, options...), nil
+}
+
+func (t *GRPCNetwork) Client(ctx context.Context, address string, options ...grpc.DialOption) (*grpc.ClientConn, error) {
+	return t.Connect(ctx, "in-proc://"+address, options...), nil
+}
+
+func (t *GRPCNetwork) SpawnService(ctx context.Context, address string, register func(ctx context.Context, srv *grpc.Server) error, otherOptions ...grpc.ServerOption) *TestListener {
 	listenerParts := strings.Split(address, ":")
 	if len(listenerParts) < 1 {
 		panic(fmt.Sprintf("GRPC listener has less than one part after split: %q", address))
@@ -76,7 +88,7 @@ func (t *TestGRPCLayer) SpawnService(ctx context.Context, address string, regist
 	}
 }
 
-func (t *TestGRPCLayer) updateResolver(ctx context.Context, address, hostName string) {
+func (t *GRPCNetwork) updateResolver(ctx context.Context, address, hostName string) {
 	t.resolverControl.Lock()
 	defer t.resolverControl.Unlock()
 
@@ -84,14 +96,14 @@ func (t *TestGRPCLayer) updateResolver(ctx context.Context, address, hostName st
 	t.resolver.InitialState(t.resolverState)
 }
 
-func (t *TestGRPCLayer) Connect(ctx context.Context, address string, opts ...grpc.DialOption) *grpc.ClientConn {
+func (t *GRPCNetwork) Connect(ctx context.Context, address string, opts ...grpc.DialOption) *grpc.ClientConn {
 	grpcClientOpts := append(t.ConnectOptions(), opts...)
 	conn, err := grpc.NewClient(address, grpcClientOpts...)
 	require.NoError(t.t, err)
 	return conn
 }
 
-func (t *TestGRPCLayer) ConnectOptions() []grpc.DialOption {
+func (t *GRPCNetwork) ConnectOptions() []grpc.DialOption {
 	return []grpc.DialOption{
 		grpc.WithResolvers(t.resolver),
 		grpc.WithContextDialer(t.physicalTransport.Dial),
@@ -101,9 +113,43 @@ func (t *TestGRPCLayer) ConnectOptions() []grpc.DialOption {
 
 type TestListener struct {
 	address  string
-	on       *TestGRPCLayer
+	on       *GRPCNetwork
 	register func(ctx context.Context, srv *grpc.Server) error
 	opts     []grpc.ServerOption
+	port     net.Listener
+	service  *grpc.Server
+}
+
+func (t *TestListener) Start(ctx context.Context) error {
+	port, err := t.on.physicalTransport.Listen(ctx, t.address)
+	if err != nil {
+		return err
+	}
+	t.port = port
+
+	slog.InfoContext(ctx, "gRPC inproc service starting\n", "address.given", t.address, "address.resolved", port.Addr().String())
+	srv := grpc.NewServer(t.opts...)
+	if err := t.register(ctx, srv); err != nil {
+		return err
+	}
+	t.service = srv
+
+	go func() {
+		if err := srv.Serve(port); err != nil {
+			//todo: report error
+		}
+	}()
+	return nil
+}
+
+func (t *TestListener) Stop(shutdownCtx context.Context) error {
+	if t.service != nil {
+		t.service.Stop()
+	}
+	if t.port != nil {
+		return t.port.Close()
+	}
+	return nil
 }
 
 func (t *TestListener) Serve(ctx context.Context) error {
