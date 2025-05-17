@@ -27,7 +27,7 @@ func TestSimpleGameLifecycle(t *testing.T) {
 		allJoined.Add(1)
 		playerID := fmt.Sprintf("%s-%d", baseUserName, i)
 		go func() {
-			_, err = core.findMatchInstance(ctx, exampleGame, playerID)
+			_, err := core.findMatchInstance(ctx, exampleGame, playerID)
 			allJoined.Done()
 			require.NoError(t, err, "matcher should not have failed on iteration %d", i)
 		}()
