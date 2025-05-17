@@ -1,5 +1,6 @@
 syntax = "proto3";
 option go_package = "competition/wire";
+import "google/protobuf/timestamp.proto";
 
 /*
  * CompetitionV1 matches players for a match.  Players may either register as persistent or play a quick match.
@@ -15,6 +16,11 @@ service CompetitionV1 {
    * for the given match beyond anther player.
    */
   rpc quickMatch(QuickMatchIn) returns (QuickMatchOut) {}
+
+  /*
+   * getHistory retrieves matches for a particular player.
+   */
+  rpc getHistory(RecordIn) returns (RecordOut) {}
 }
 
 message UUID {
@@ -69,6 +75,7 @@ service GameRegistry {
 
 message RegisterGameIn {
   string name = 1;
+  string instanceID = 2;
 }
 
 message RegisterGameOut {
@@ -97,12 +104,14 @@ message ListRegisteredGamesOut {
 
 service GameEngineOrchestration {
   rpc engineAvailable(EngineAvailableIn) returns (EngineAvailableOut) {}
+  // gameComplete records the end of a particular game
   rpc gameComplete(EngineGameCompleteIn) returns (EngineGameCompleteOut) {}
 }
 
 message EngineAvailableIn {
   string forGame = 1;
   string startURL = 2;
+  string instanceID = 3;
 }
 
 message EngineAvailableOut {
@@ -119,14 +128,23 @@ message SimpleTestGameIn {
 message SimpleTestGameOut {}
 
 message EngineGameCompleteIn {
-  string gameID = 1;
+  CompletedGame results = 1;
 }
 message EngineGameCompleteOut {}
 
-message GameResultIn {
-  string gameID = 1;
+message CompletedGame {
+  string game = 1;
+  string instanceID = 2;
+  repeated string players = 3;
+  string winner = 4;
+  google.protobuf.Timestamp start = 5;
+  google.protobuf.Timestamp end = 6;
 }
 
-message GameResultOut {
-  string winningPlayerName = 1;
+message RecordIn {
+  string forPlayer = 1;
+}
+
+message RecordOut {
+  repeated CompletedGame games = 1;
 }

@@ -3,7 +3,7 @@ package competition
 import (
 	"context"
 	"errors"
-	"github.com/google/uuid"
+	"github.com/meschbach/go-junk-bucket/pkg/fx"
 	"log/slog"
 	"sync"
 )
@@ -24,9 +24,13 @@ const (
 type gameInstanceLobby struct {
 	phase        gameInstancePhase
 	desiredCount int
-	playerCount  int
-	instanceURL  string
-	instanceID   string
+	//todo: consider replacing with len(players)
+	playerCount int
+	instanceURL string
+	instanceID  string
+	players     []string
+	winner      string
+	gameID      string
 }
 
 type gameLobby struct {
@@ -63,18 +67,12 @@ func (m *matcher) ensureGame(ctx context.Context, game string) error {
 	return nil
 }
 
-func (m *matcher) registerInstance(ctx context.Context, game, instanceURL string) (string, error) {
+func (m *matcher) registerInstance(ctx context.Context, game, id, instanceURL string) (string, error) {
 	slog.InfoContext(ctx, "matcher.registerInstance", "Game", game, "instanceURL", instanceURL)
 	lobby, err := m.findGameLobby(ctx, game)
 	if err != nil {
 		return "", err
 	}
-
-	structuredID, err := uuid.NewV7()
-	if err != nil {
-		return "", err
-	}
-	id := structuredID.String()
 
 	lobby.state.Lock()
 	defer lobby.state.Unlock()
@@ -85,11 +83,12 @@ func (m *matcher) registerInstance(ctx context.Context, game, instanceURL string
 		playerCount:  0,
 		instanceURL:  instanceURL,
 		instanceID:   id,
+		gameID:       game,
 	})
 	return id, nil
 }
 
-func (m *matcher) findMatchInstance(ctx context.Context, game string) (*matchedGame, error) {
+func (m *matcher) findMatchInstance(ctx context.Context, game, playerID string) (*matchedGame, error) {
 	slog.InfoContext(ctx, "matcher.findMatchInstance", "Game", game)
 	lobby, err := m.findGameLobby(ctx, game)
 	if err != nil {
@@ -105,6 +104,7 @@ func (m *matcher) findMatchInstance(ctx context.Context, game string) (*matchedG
 
 	instance := lobby.available[0]
 	instance.playerCount++
+	instance.players = append(instance.players, playerID)
 	for instance.playerCount < instance.desiredCount {
 		slog.InfoContext(ctx, "matcher.findMatchInstance -- waiting on additional players", "Game", game, "instance", instance.instanceID, "playerCount", instance.playerCount, "desiredCount", instance.desiredCount)
 		lobby.waiting.Wait()
@@ -115,7 +115,7 @@ func (m *matcher) findMatchInstance(ctx context.Context, game string) (*matchedG
 		lobby.playing = append(lobby.playing, instance)
 		lobby.available = lobby.available[1:]
 	}
-	lobby.waiting.Signal()
+	lobby.waiting.Broadcast()
 	return &matchedGame{instanceURL: instance.instanceURL, instanceID: instance.instanceID}, nil
 }
 
@@ -128,4 +128,53 @@ func (m *matcher) findGameLobby(ctx context.Context, game string) (*gameLobby, e
 		return nil, errors.New("game not found")
 	}
 	return lobby, nil
+}
+
+func (m *matcher) gameCompleted(ctx context.Context, game, instanceID, winner string) error {
+	lobby, err := m.findGameLobby(ctx, game)
+	if err != nil {
+		return err
+	}
+
+	lobby.state.Lock()
+	defer lobby.state.Unlock()
+	matched, stillPlaying := fx.Split(lobby.playing, func(e *gameInstanceLobby) bool {
+		return e.instanceID == instanceID
+	})
+	slog.InfoContext(ctx, "matcher.gameCompleted__found playing", "Game", game, "instanceID", instanceID, "stillPlaying", stillPlaying, "matched", matched)
+	if len(matched) != 1 {
+		return errors.New("no such match")
+	}
+	lobby.playing = stillPlaying
+	lobby.completed = append(lobby.completed, matched...)
+
+	match := matched[0]
+	match.phase = completed
+	//todo: check winner is in the set of players
+	match.winner = winner
+	lobby.waiting.Broadcast()
+	return nil
+}
+
+func (m *matcher) findAllGamesForPlayer(ctx context.Context, playerID string) []*gameInstanceLobby {
+	m.state.Lock()
+	defer m.state.Unlock()
+	var out []*gameInstanceLobby
+
+	for _, game := range m.gameMatches {
+		game.state.Lock()
+		finished := game.completed
+		for _, match := range finished {
+			if match.phase == completed {
+				matching := fx.Filter(match.players, func(e string) bool {
+					return e == playerID
+				})
+				if len(matching) >= 1 {
+					out = append(out, match)
+				}
+			}
+		}
+		game.state.Unlock()
+	}
+	return out
 }

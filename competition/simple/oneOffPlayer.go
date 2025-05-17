@@ -70,8 +70,11 @@ func (r *RunOncePlayer) Run(ctx context.Context) error {
 	}
 	defer gameClient.Close()
 	simpleGameClient := NewSimpleGameClient(gameClient)
-	slog.InfoContext(ctx, "Connecting to game", "game.id", matchOut.UUID)
-	result, err := simpleGameClient.Joined(ctx, &JoinedIn{})
+	slog.InfoContext(ctx, "Connecting to game", "game.id", matchOut.UUID, "game.url", matchOut.MatchURL)
+	result, err := simpleGameClient.Joined(ctx, &JoinedIn{
+		InstanceID: matchOut.UUID,
+		PlayerID:   "test-1234",
+	})
 	if err != nil {
 		return err
 	}

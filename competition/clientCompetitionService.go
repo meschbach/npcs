@@ -17,7 +17,7 @@ type clientCompetitionService struct {
 
 func (v *clientCompetitionService) QuickMatch(ctx context.Context, in *wire.QuickMatchIn) (*wire.QuickMatchOut, error) {
 	slog.InfoContext(ctx, "ClientCompetition#QuickMatch", "Game", in.Game)
-	match, err := v.core.findMatchInstance(ctx, in.Game)
+	match, err := v.core.findMatchInstance(ctx, in.Game, in.PlayerName)
 	if err != nil {
 		return nil, err
 	}
@@ -26,4 +26,19 @@ func (v *clientCompetitionService) QuickMatch(ctx context.Context, in *wire.Quic
 		MatchURL: match.instanceURL,
 		UUID:     match.instanceID,
 	}, nil
+}
+
+func (v *clientCompetitionService) GetHistory(ctx context.Context, in *wire.RecordIn) (*wire.RecordOut, error) {
+	out := &wire.RecordOut{}
+	for _, game := range v.core.findAllGamesForPlayer(ctx, in.ForPlayer) {
+		out.Games = append(out.Games, &wire.CompletedGame{
+			Game:       game.gameID,
+			InstanceID: game.instanceID,
+			Players:    game.players,
+			Winner:     game.winner,
+			Start:      nil,
+			End:        nil,
+		})
+	}
+	return out, nil
 }

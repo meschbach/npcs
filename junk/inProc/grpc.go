@@ -40,7 +40,6 @@ func NewGRPCNetwork(t *testing.T, opts ...GRPCOption) *GRPCNetwork {
 		physicalTransport: NewNetwork(),
 		resolverControl:   sync.Mutex{},
 		resolverState:     resolver.State{},
-		resolver:          manual.NewBuilderWithScheme("in-proc"),
 	}
 	for _, opt := range opts {
 		opt(layer)
@@ -61,7 +60,9 @@ func (t *GRPCNetwork) Listener(ctx context.Context, address string, registratar 
 }
 
 func (t *GRPCNetwork) Client(ctx context.Context, address string, options ...grpc.DialOption) (*grpc.ClientConn, error) {
-	return t.Connect(ctx, "in-proc://"+address, options...), nil
+	internalURL := "in-proc://" + address
+	slog.InfoContext(ctx, "New GRPC client", "address", internalURL)
+	return t.Connect(ctx, internalURL, options...), nil
 }
 
 func (t *GRPCNetwork) SpawnService(ctx context.Context, address string, register func(ctx context.Context, srv *grpc.Server) error, otherOptions ...grpc.ServerOption) *TestListener {
@@ -77,8 +78,6 @@ func (t *GRPCNetwork) SpawnService(ctx context.Context, address string, register
 	serviceTLS, err := tlsKeys.ConfigureTLSConfig(&tls.Config{})
 	require.NoError(t.t, err)
 
-	t.updateResolver(ctx, address, hostName)
-
 	opts := append(otherOptions, grpc.Creds(credentials.NewTLS(serviceTLS)))
 	return &TestListener{
 		address:  address,
@@ -86,14 +85,6 @@ func (t *GRPCNetwork) SpawnService(ctx context.Context, address string, register
 		register: register,
 		opts:     opts,
 	}
-}
-
-func (t *GRPCNetwork) updateResolver(ctx context.Context, address, hostName string) {
-	t.resolverControl.Lock()
-	defer t.resolverControl.Unlock()
-
-	t.resolverState.Addresses = append(t.resolverState.Addresses, resolver.Address{Addr: address, ServerName: hostName})
-	t.resolver.InitialState(t.resolverState)
 }
 
 func (t *GRPCNetwork) Connect(ctx context.Context, address string, opts ...grpc.DialOption) *grpc.ClientConn {
@@ -105,7 +96,7 @@ func (t *GRPCNetwork) Connect(ctx context.Context, address string, opts ...grpc.
 
 func (t *GRPCNetwork) ConnectOptions() []grpc.DialOption {
 	return []grpc.DialOption{
-		grpc.WithResolvers(t.resolver),
+		grpc.WithResolvers(&grpcResolverBuilder{state: &sync.Mutex{}}),
 		grpc.WithContextDialer(t.physicalTransport.Dial),
 		grpc.WithTransportCredentials(credentials.NewTLS(t.publicKeyInfra.GenerateTLSConfig())),
 	}
@@ -127,16 +118,17 @@ func (t *TestListener) Start(ctx context.Context) error {
 	}
 	t.port = port
 
-	slog.InfoContext(ctx, "gRPC inproc service starting\n", "address.given", t.address, "address.resolved", port.Addr().String())
+	slog.InfoContext(ctx, "gRPC inproc service starting", "address.given", t.address, "address.resolved", port.Addr().String())
 	srv := grpc.NewServer(t.opts...)
 	if err := t.register(ctx, srv); err != nil {
+		slog.ErrorContext(ctx, "gRPC server failed to register", "error", err)
 		return err
 	}
 	t.service = srv
 
 	go func() {
 		if err := srv.Serve(port); err != nil {
-			//todo: report error
+			slog.ErrorContext(ctx, "gRPC server failed to serve", "error", err)
 		}
 	}()
 	return nil
