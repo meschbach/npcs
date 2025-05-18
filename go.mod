@@ -1,11 +1,14 @@
 module github.com/meschbach/npcs
 
-go 1.23.1
+go 1.24.2
+
+toolchain go1.24.3
 
 require (
 	github.com/go-faker/faker/v4 v4.5.0
 	github.com/google/uuid v1.6.0
 	github.com/madflojo/testcerts v1.3.0
+	github.com/meschbach/go-junk-bucket v0.1.5
 	github.com/samber/slog-multi v1.4.0
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.10.0
