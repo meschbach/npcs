@@ -1,0 +1,150 @@
+syntax = "proto3";
+option go_package = "competition/wire";
+import "google/protobuf/timestamp.proto";
+
+/*
+ * CompetitionV1 matches players for a match.  Players may either register as persistent or play a quick match.
+ */
+service CompetitionV1 {
+  /*
+   * Registers the given player as a persistent service based player.  When a challenger appears the matching system
+   * will notify the registered player.
+   */
+  rpc registerPersistentPlayer(RegisterPlayerIn) returns (RegisterPlayerOut) {}
+  /*
+   * QuickMatch seeks a match with another waiting player or a registered persistent player.  No guarantees are made
+   * for the given match beyond anther player.
+   */
+  rpc quickMatch(QuickMatchIn) returns (QuickMatchOut) {}
+
+  /*
+   * getHistory retrieves matches for a particular player.
+   */
+  rpc getHistory(RecordIn) returns (RecordOut) {}
+}
+
+message UUID {
+  optional string text = 1;
+  optional bytes binary = 2;
+}
+
+/*
+ * RegisterPlayerIn provides a user handle and orchestration URL.
+ */
+message RegisterPlayerIn {
+  /*
+   * orchestrationURL is the address to contact the player at.  This must be an instance of the Orchestration service.
+   */
+  string orchestrationURL = 1;
+  /*
+   * name is a human digestible name for the given player.
+   */
+  string name = 2;
+}
+
+message RegisterPlayerOut {
+}
+
+message QuickMatchIn {
+  string game = 1;
+  string playerName = 2;
+}
+
+/*
+ * QuickMatchOut provides details on connecting to a match
+ */
+message QuickMatchOut {
+  /*
+   * matchURL is the implementing service for the given match.
+   */
+  string matchURL = 1;
+  /*
+   * UUID for the given match to be provided to the target service.
+   */
+  string UUID = 2;
+}
+
+/*
+ * GameRegistry is an administration plane system for manging which games are available and their execution mechanisms.
+ */
+service GameRegistry {
+  rpc registerGame(RegisterGameIn) returns (RegisterGameOut) {}
+  rpc unregisterGame(UnregisterGameIn) returns (UnregisterGameOut) {}
+  rpc listRegisteredGames(ListRegisteredGamesIn) returns (ListRegisteredGamesOut) {}
+}
+
+message RegisterGameIn {
+  string name = 1;
+  string instanceID = 2;
+}
+
+message RegisterGameOut {
+  string id = 1;
+}
+
+message UnregisterGameIn {
+  string id = 1;
+}
+
+message UnregisterGameOut {
+}
+
+message ListRegisteredGamesIn {
+}
+
+message RegisteredGame {
+  string name = 1;
+  string id = 2;
+  bool active = 3;
+}
+
+message ListRegisteredGamesOut {
+  repeated RegisteredGame games = 1;
+}
+
+service GameEngineOrchestration {
+  rpc engineAvailable(EngineAvailableIn) returns (EngineAvailableOut) {}
+  // gameComplete records the end of a particular game
+  rpc gameComplete(EngineGameCompleteIn) returns (EngineGameCompleteOut) {}
+}
+
+message EngineAvailableIn {
+  string forGame = 1;
+  string startURL = 2;
+  string instanceID = 3;
+}
+
+message EngineAvailableOut {
+  string gameID = 1;
+}
+
+service SimpleTestGameService {
+  rpc connected(SimpleTestGameIn) returns (SimpleTestGameOut) {}
+}
+
+message SimpleTestGameIn {
+  string gameID = 1;
+}
+message SimpleTestGameOut {}
+
+message EngineGameCompleteIn {
+  CompletedGame results = 1;
+}
+message EngineGameCompleteOut {}
+
+message CompletedGame {
+  string game = 1;
+  string instanceID = 2;
+  repeated string players = 3;
+  string winner = 4;
+  google.protobuf.Timestamp start = 5;
+  google.protobuf.Timestamp end = 6;
+}
+
+message RecordIn {
+  string forPlayer = 1;
+}
+
+message RecordOut {
+  repeated CompletedGame games = 1;
+}

@@ -1,0 +1,24 @@
+name: Ensure basic tests pass within PRs
+
+on:
+  pull_request:
+
+jobs:
+  golang_unit_tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [ '1.24' ]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Run integration tests
+        run: |
+          go test -v -timeout 60s ./...
+          ./dev.sh

@@ -88,7 +88,7 @@ func (t *Game) doPlayerTurn(ctx context.Context, side int, input Player) error {
 		}
 	}
 	if occupied { //todo: figure out how to handle bad plays...giving up turn sufficient?
-
+		return errors.New("already occupied")
 	}
 	p1Err := t.p1.PushHistory(ctx, move)
 	p2Err := t.p2.PushHistory(ctx, move)

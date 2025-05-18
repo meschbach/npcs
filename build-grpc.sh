@@ -11,3 +11,12 @@ function gen_grpc() {
 }
 
 gen_grpc t3/network/game.proto
+git add t3/network/game.pb.go t3/network/game_grpc.pb.go
+gen_grpc competition/wire/competition.proto
+git add competition/wire/competition.pb.go competition/wire/competition_grpc.pb.go
+
+gen_grpc competition/simple/wire.proto
+git add competition/simple/wire.pb.go competition/simple/wire_grpc.pb.go
+
+gen_grpc junk/inProc/example/simple.proto
+git add junk/inProc/example/simple.pb.go junk/inProc/example/simple_grpc.pb.go

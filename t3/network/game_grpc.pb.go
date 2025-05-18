@@ -28,6 +28,9 @@ const (
 // T3Client is the client API for T3 service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// *
+// T3 is a game dialed into by the game engine, when the particular AI agent is exported for general play.
 type T3Client interface {
 	StartGame(ctx context.Context, in *StartGameIn, opts ...grpc.CallOption) (*StartGameOut, error)
 	MoveMade(ctx context.Context, in *MoveMadeIn, opts ...grpc.CallOption) (*MoveMadeOut, error)
@@ -86,6 +89,9 @@ func (c *t3Client) Concluded(ctx context.Context, in *ConclusionIn, opts ...grpc
 // T3Server is the server API for T3 service.
 // All implementations must embed UnimplementedT3Server
 // for forward compatibility.
+//
+// *
+// T3 is a game dialed into by the game engine, when the particular AI agent is exported for general play.
 type T3Server interface {
 	StartGame(context.Context, *StartGameIn) (*StartGameOut, error)
 	MoveMade(context.Context, *MoveMadeIn) (*MoveMadeOut, error)
@@ -231,5 +237,165 @@ var T3_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
+	Metadata: "t3/network/game.proto",
+}
+
+const (
+	T3Push_ConnectToGame_FullMethodName = "/T3Push/connectToGame"
+	T3Push_Move_FullMethodName          = "/T3Push/move"
+)
+
+// T3PushClient is the client API for T3Push service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// *
+// T3Push is an interface exported by the game engine for clients to push in moves.
+type T3PushClient interface {
+	// *
+	// connectToGame creates a streaming event connection to the target game.  Each advance in the game will be sent
+	// as an event.
+	ConnectToGame(ctx context.Context, in *JoinGameIn, opts ...grpc.CallOption) (grpc.ServerStreamingClient[T3PushEvent], error)
+	// *
+	// Pushes a move onto the player stack.
+	Move(ctx context.Context, in *PushMoveIn, opts ...grpc.CallOption) (*PushMoveOut, error)
+}
+
+type t3PushClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewT3PushClient(cc grpc.ClientConnInterface) T3PushClient {
+	return &t3PushClient{cc}
+}
+
+func (c *t3PushClient) ConnectToGame(ctx context.Context, in *JoinGameIn, opts ...grpc.CallOption) (grpc.ServerStreamingClient[T3PushEvent], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &T3Push_ServiceDesc.Streams[0], T3Push_ConnectToGame_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[JoinGameIn, T3PushEvent]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type T3Push_ConnectToGameClient = grpc.ServerStreamingClient[T3PushEvent]
+
+func (c *t3PushClient) Move(ctx context.Context, in *PushMoveIn, opts ...grpc.CallOption) (*PushMoveOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PushMoveOut)
+	err := c.cc.Invoke(ctx, T3Push_Move_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// T3PushServer is the server API for T3Push service.
+// All implementations must embed UnimplementedT3PushServer
+// for forward compatibility.
+//
+// *
+// T3Push is an interface exported by the game engine for clients to push in moves.
+type T3PushServer interface {
+	// *
+	// connectToGame creates a streaming event connection to the target game.  Each advance in the game will be sent
+	// as an event.
+	ConnectToGame(*JoinGameIn, grpc.ServerStreamingServer[T3PushEvent]) error
+	// *
+	// Pushes a move onto the player stack.
+	Move(context.Context, *PushMoveIn) (*PushMoveOut, error)
+	mustEmbedUnimplementedT3PushServer()
+}
+
+// UnimplementedT3PushServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedT3PushServer struct{}
+
+func (UnimplementedT3PushServer) ConnectToGame(*JoinGameIn, grpc.ServerStreamingServer[T3PushEvent]) error {
+	return status.Errorf(codes.Unimplemented, "method ConnectToGame not implemented")
+}
+func (UnimplementedT3PushServer) Move(context.Context, *PushMoveIn) (*PushMoveOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Move not implemented")
+}
+func (UnimplementedT3PushServer) mustEmbedUnimplementedT3PushServer() {}
+func (UnimplementedT3PushServer) testEmbeddedByValue()                {}
+
+// UnsafeT3PushServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to T3PushServer will
+// result in compilation errors.
+type UnsafeT3PushServer interface {
+	mustEmbedUnimplementedT3PushServer()
+}
+
+func RegisterT3PushServer(s grpc.ServiceRegistrar, srv T3PushServer) {
+	// If the following call pancis, it indicates UnimplementedT3PushServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&T3Push_ServiceDesc, srv)
+}
+
+func _T3Push_ConnectToGame_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(JoinGameIn)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(T3PushServer).ConnectToGame(m, &grpc.GenericServerStream[JoinGameIn, T3PushEvent]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type T3Push_ConnectToGameServer = grpc.ServerStreamingServer[T3PushEvent]
+
+func _T3Push_Move_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PushMoveIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(T3PushServer).Move(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: T3Push_Move_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(T3PushServer).Move(ctx, req.(*PushMoveIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// T3Push_ServiceDesc is the grpc.ServiceDesc for T3Push service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var T3Push_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "T3Push",
+	HandlerType: (*T3PushServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "move",
+			Handler:    _T3Push_Move_Handler,
+		},
+	},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "connectToGame",
+			Handler:       _T3Push_ConnectToGame_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "t3/network/game.proto",
 }

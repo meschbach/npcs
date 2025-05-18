@@ -1,0 +1,14 @@
+syntax = "proto3";
+option go_package = "junk/inProc/example";
+
+service Simple {
+  rpc sayHello(HelloIn) returns (HelloOut) {}
+}
+
+message HelloIn {
+  string name = 1;
+}
+
+message HelloOut {
+  string greeting = 1;
+}
