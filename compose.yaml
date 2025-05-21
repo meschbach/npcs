@@ -1,0 +1,8 @@
+services:
+  competition:
+    build:
+      context: .
+      dockerfile: ./cmd/competition/Dockerfile
+    command:
+      - "--address"
+      - "0.0.0.0:11234"
