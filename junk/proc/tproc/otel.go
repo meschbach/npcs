@@ -7,10 +7,12 @@ import (
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/log/global"
 	"log/slog"
 	"os"
+	"strings"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
@@ -108,8 +110,22 @@ func newTracerProvider(ctx context.Context) (*trace.TracerProvider, error) {
 func newMeterProvider(ctx context.Context) (*metric.MeterProvider, error) {
 	var opts []metric.Option
 	if hasOneEnv("OTEL_EXPORTER_OTLP_METRICS_ENDPOINT", "OTEL_EXPORTER_OTLP_ENDPOINT") {
-		slog.InfoContext(ctx, "OTLP Metrics exported via GRPC")
-		metricExporter, err := otlpmetricgrpc.New(ctx)
+		endpoint := os.Getenv("OTEL_EXPORTER_OTLP_METRICS_ENDPOINT")
+		if endpoint == "" {
+			endpoint = os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+		}
+
+		var metricExporter metric.Exporter
+		var err error
+
+		if strings.HasPrefix(endpoint, "http://") || strings.HasPrefix(endpoint, "https://") {
+			slog.InfoContext(ctx, "OTLP Metrics exported via HTTP")
+			metricExporter, err = otlpmetrichttp.New(ctx)
+		} else {
+			slog.InfoContext(ctx, "OTLP Metrics exported via GRPC")
+			metricExporter, err = otlpmetricgrpc.New(ctx)
+		}
+
 		if err != nil {
 			return nil, err
 		}
