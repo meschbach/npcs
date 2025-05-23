@@ -6,3 +6,27 @@ services:
     command:
       - "--address"
       - "0.0.0.0:11234"
+    expose:
+      - "11234"
+    environment:
+      - "ENV=dev-compose"
+  simple:
+    build:
+      context: .
+      dockerfile: ./cmd/competition/Dockerfile
+    entrypoint:
+      - "/service"
+      - "simple-game"
+      - "game-instance"
+      - "--competition-service"
+      - "competition:11234"
+      - "--service-address"
+      - "0.0.0.0:11235"
+      - "--advertise-address"
+      - "simple:11235"
+    expose:
+      - "11235"
+    environment:
+      - "ENV=dev-compose"
+    depends_on:
+      - competition

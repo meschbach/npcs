@@ -52,5 +52,6 @@ if [ "x$release" = "xyes" ]; then
 fi
 
 if [ "$compose" = "yes" ]; then
+  docker compose down
   docker compose up --build
 fi
