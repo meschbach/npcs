@@ -53,5 +53,6 @@ fi
 
 if [ "$compose" = "yes" ]; then
   docker compose down
-  docker compose up --build
+  docker compose up --build --attach-dependencies player_1 player_2
+  docker compose down
 fi
