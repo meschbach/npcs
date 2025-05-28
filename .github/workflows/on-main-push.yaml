@@ -71,9 +71,9 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            linux-amd64.tar.gz
-            linux-arm64.tar.gz
-            darwin-arm64.tar.gz
+            linux-amd64.tgz
+            linux-arm64.tgz
+            darwin-arm64.tgz
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
