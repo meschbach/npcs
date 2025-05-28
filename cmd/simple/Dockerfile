@@ -19,6 +19,6 @@ COPY --from=data /usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=data /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=data /etc/passwd /etc/passwd
 COPY --from=data /etc/group /etc/group
-COPY --chown=appuser:appuser --chmod=0555 bin/simple_$TARGETARCH /service
+COPY --chown=appuser:appuser --chmod=0555 bin/linux-$TARGETARCH/simple /service
 USER appuser:appuser
 ENTRYPOINT ["/service", "daemon"]

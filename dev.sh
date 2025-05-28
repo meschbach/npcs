@@ -6,10 +6,12 @@ for arg in "$@" ; do
   case "$arg" in
     compose)
       compose=yes
+      OPERATING_SYSTEMS="linux darwin"
       ARCHITECTURES="amd64 arm64"
       ;;
     release)
       release=yes
+      OPERATING_SYSTEMS="linux darwin"
       ARCHITECTURES="amd64 arm64"
       ;;
     *)
@@ -32,24 +34,22 @@ function compile() {
   if [ -z "$ARCHITECTURES" ]; then
     go build -o $output ./$entry
   else
-    for arch in $ARCHITECTURES; do
-      echo -n "    $arch"
-      CGO_ENABLED=0 GOOS=linux GOARCH=${arch} go build -trimpath -ldflags='-w -s -extldflags "-static"' -o "${output}_${arch}" ./$entry
-      echo "."
+    for os in $OPERATING_SYSTEMS; do
+      for arch in $ARCHITECTURES; do
+        echo -n "    $os-$arch"
+        mkdir -p "bin/${os}-${arch}"
+        CGO_ENABLED=0 GOOS=${os} GOARCH=${arch} go build -trimpath -ldflags='-w -s -extldflags "-static"' -o "bin/${os}-${arch}/${output}" ./$entry
+        echo "."
+      done
     done
   fi
 }
 
 mkdir -p bin
-compile cmd/competition bin/competition
-compile cmd/simple bin/simple
+compile cmd/competition competition
+compile cmd/simple simple
 
 echo "All programs compiled."
-
-if [ "x$release" = "xyes" ]; then
-  echo "Building docker images"
-  docker buildx build --platform "linux/amd64,linux/arm64" -f ./cmd/competition/Dockerfile .
-fi
 
 if [ "$compose" = "yes" ]; then
   docker compose down
