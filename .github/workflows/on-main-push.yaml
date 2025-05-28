@@ -16,7 +16,7 @@ jobs:
       cancel-in-progress: true
 
     permissions:
-      contents: read
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,6 +39,8 @@ jobs:
     permissions:
       contents: write
       packages: write
+    needs:
+      - release_tag
     steps:
       - uses: actions/checkout@v4
         with:
