@@ -42,7 +42,7 @@ jobs:
 
       - name: Build Go Artifacts
         run: |
-          ./dev release
+          ./dev.sh release
           ./release-package.sh
 
       - name: Create Release
