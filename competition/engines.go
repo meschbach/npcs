@@ -2,6 +2,7 @@ package competition
 
 import (
 	"context"
+	"errors"
 	"github.com/meschbach/npcs/competition/wire"
 )
 
@@ -17,6 +18,9 @@ func newEngines(core *matcher) *engines {
 }
 
 func (e *engines) EngineAvailable(ctx context.Context, in *wire.EngineAvailableIn) (*wire.EngineAvailableOut, error) {
+	if in.InstanceID == "" {
+		return nil, errors.New("instance ID must be provided")
+	}
 	id, err := e.core.registerInstance(ctx, in.ForGame, in.InstanceID, in.StartURL)
 	if err != nil {
 		return nil, err

@@ -12,21 +12,29 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"log/slog"
 	"os"
+	"time"
 )
 
 type playerInstance struct {
+	competitionAddress string
+	playerID           string
+	startupDelay       time.Duration
 }
 
 func (p *playerInstance) run(ctx context.Context) error {
+	if p.startupDelay != 0 {
+		time.Sleep(p.startupDelay)
+	}
+
 	net := realnet.NetworkedGRPC
-	competitionClientWire, err := net.Client(ctx, "127.0.0.1:11234", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	competitionClientWire, err := net.Client(ctx, p.competitionAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
 	}
 	defer competitionClientWire.Close()
 	competitionClient := wire.NewCompetitionV1Client(competitionClientWire)
 	matchOut, err := competitionClient.QuickMatch(ctx, &wire.QuickMatchIn{
-		PlayerName: "test-1234",
+		PlayerName: p.playerID,
 		Game:       "github.com/meschbach/npc/competition/simple/v0",
 	})
 	if err != nil {
@@ -41,7 +49,10 @@ func (p *playerInstance) run(ctx context.Context) error {
 	defer gameClient.Close()
 	simpleGameClient := simple.NewSimpleGameClient(gameClient)
 	slog.InfoContext(ctx, "Connecting to game", "game.id", matchOut.UUID)
-	result, err := simpleGameClient.Joined(ctx, &simple.JoinedIn{})
+	result, err := simpleGameClient.Joined(ctx, &simple.JoinedIn{
+		InstanceID: matchOut.UUID,
+		PlayerID:   p.playerID,
+	})
 	if err != nil {
 		return err
 	}
@@ -50,16 +61,20 @@ func (p *playerInstance) run(ctx context.Context) error {
 }
 
 func main() {
+	i := &playerInstance{}
 	root := &cobra.Command{
 		Use:   "simple",
 		Short: "Simple game client",
 		Run: func(cmd *cobra.Command, args []string) {
-			i := &playerInstance{}
 			if err := tproc.RunOnce("simple-game-client", i.run); err != nil {
 				slog.Error("tproc.AsService failed", "error", err)
 			}
 		},
 	}
+	flags := root.PersistentFlags()
+	flags.StringVarP(&i.competitionAddress, "competition-address", "c", "127.0.0.1:11234", "address of the competition service")
+	flags.StringVarP(&i.playerID, "player-id", "p", "test-1234", "player ID to use")
+	flags.DurationVarP(&i.startupDelay, "startup-delay", "d", 0, "delay before searching for a match. Useful for debugging or development settings.")
 
 	if err := root.Execute(); err != nil {
 		if _, err := fmt.Fprintf(os.Stderr, "error: %v\n", err); err != nil {

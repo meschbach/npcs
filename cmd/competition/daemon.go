@@ -39,12 +39,17 @@ func (d *Daemon) Stop(ctx context.Context) error {
 	}
 }
 
+type daemonOptions struct {
+	address string
+}
+
 func daemonCommand() *cobra.Command {
+	opts := &daemonOptions{}
 	cmd := &cobra.Command{
 		Use:   "daemon",
 		Short: "Launches daemon for competitions",
 		Run: func(cmd *cobra.Command, args []string) {
-			c := competition.NewCompetitionSystem(nil, "localhost:11234", realnet.NetworkedGRPC, nil)
+			c := competition.NewCompetitionSystem(nil, opts.address, realnet.NetworkedGRPC, nil)
 			if err := tproc.AsService(&Daemon{c: c}); err != nil {
 				_, e := fmt.Fprintf(os.Stderr, "failed to run process because %e", err)
 				if e != nil {
@@ -53,6 +58,8 @@ func daemonCommand() *cobra.Command {
 			}
 		},
 	}
+	flags := cmd.PersistentFlags()
+	flags.StringVarP(&opts.address, "address", "a", "localhost:11234", "address to listen on")
 
 	return cmd
 }

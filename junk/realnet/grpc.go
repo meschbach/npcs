@@ -2,6 +2,7 @@ package realnet
 
 import (
 	"context"
+	"fmt"
 	junk2 "github.com/meschbach/npcs/junk"
 	"google.golang.org/grpc"
 	"log/slog"
@@ -27,8 +28,28 @@ func (r *RealGRPCNetwork) Listener(ctx context.Context, address string, registra
 	}, nil
 }
 
+type ClientConnectError struct {
+	address    string
+	underlying error
+}
+
+func (c *ClientConnectError) Unwrap() error {
+	return c.underlying
+}
+
+func (c *ClientConnectError) Error() string {
+	return fmt.Sprintf("failed to connect to gRPC service at %s: %s", c.address, c.underlying.Error())
+}
+
 func (r *RealGRPCNetwork) Client(ctx context.Context, address string, options ...grpc.DialOption) (*grpc.ClientConn, error) {
-	return grpc.NewClient(address, options...)
+	conn, err := grpc.NewClient(address, options...)
+	if err != nil {
+		err = &ClientConnectError{
+			address:    address,
+			underlying: err,
+		}
+	}
+	return conn, err
 }
 
 type gRPCListener struct {
