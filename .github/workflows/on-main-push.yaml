@@ -73,7 +73,7 @@ jobs:
           fail_on_unmatched_files: true
           generate_release_notes: true
           files: |
-            npc-**
+            npcs-**
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
