@@ -44,7 +44,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: tags/${{ needs.release_tag.outputs.tag_version }}
+          ref: ${{ needs.release_tag.outputs.tag_version }}
           fetch-depth: 0
 
       - name: Set up Docker Buildx
