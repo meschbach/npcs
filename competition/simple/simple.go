@@ -17,7 +17,7 @@ const (
 	gamePhase_done
 )
 
-type gameInstance struct {
+type GameInstance struct {
 	state   *sync.Mutex
 	changes *sync.Cond
 
@@ -27,7 +27,7 @@ type gameInstance struct {
 	winner      string
 }
 
-func (g *gameInstance) joinPlayer(ctx context.Context, player string) bool {
+func (g *GameInstance) joinPlayer(ctx context.Context, player string) bool {
 	g.state.Lock()
 	defer g.state.Unlock()
 
@@ -52,23 +52,23 @@ func (g *gameInstance) joinPlayer(ctx context.Context, player string) bool {
 	return won
 }
 
-func (g *gameInstance) waitOnGameCompletion() {
-	slog.Info("gameInstance waiting on completion")
+func (g *GameInstance) waitOnGameCompletion() {
+	slog.Info("GameInstance waiting on completion")
 	g.state.Lock()
 	defer g.state.Unlock()
 
 	for g.phase != gamePhase_done {
-		slog.Info("gameInstance waiting")
+		slog.Info("GameInstance waiting")
 		g.changes.Wait()
 	}
-	slog.Info("gameInstance game completed.")
+	slog.Info("GameInstance game completed.")
 }
 
 type GameService struct {
 	UnimplementedSimpleGameServer
 	state        *sync.Mutex
 	othersJoined *sync.Cond
-	instances    map[string]*gameInstance
+	instances    map[string]*GameInstance
 }
 
 func NewGameService() *GameService {
@@ -76,11 +76,11 @@ func NewGameService() *GameService {
 	return &GameService{
 		state:        s,
 		othersJoined: sync.NewCond(s),
-		instances:    make(map[string]*gameInstance),
+		instances:    make(map[string]*GameInstance),
 	}
 }
 
-func (s *GameService) findInstance(instance string) (*gameInstance, bool) {
+func (s *GameService) findInstance(instance string) (*GameInstance, bool) {
 	s.state.Lock()
 	defer s.state.Unlock()
 
@@ -102,7 +102,7 @@ func (s *GameService) Joined(ctx context.Context, j *JoinedIn) (*JoinedOut, erro
 	}, nil
 }
 
-func (s *GameService) runGameInstance() (string, *gameInstance, error) {
+func (s *GameService) RunGameInstance() (string, *GameInstance, error) {
 	instanceIDStruct, err := uuid.NewV7()
 	if err != nil {
 		return "", nil, err
@@ -110,7 +110,7 @@ func (s *GameService) runGameInstance() (string, *gameInstance, error) {
 	instanceID := instanceIDStruct.String()
 
 	lock := &sync.Mutex{}
-	g := &gameInstance{
+	g := &GameInstance{
 		state:       lock,
 		changes:     sync.NewCond(lock),
 		phase:       gamePhase_waitingForPlayers,
@@ -121,7 +121,7 @@ func (s *GameService) runGameInstance() (string, *gameInstance, error) {
 	return instanceID, g, nil
 }
 
-func (s *GameService) addSession(id string, g *gameInstance) {
+func (s *GameService) addSession(id string, g *GameInstance) {
 	slog.Info("adding session", "instance", id)
 	s.state.Lock()
 	defer s.state.Unlock()

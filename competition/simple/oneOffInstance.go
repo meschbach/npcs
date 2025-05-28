@@ -32,7 +32,7 @@ type RunOnceInstance struct {
 	instanceServiceAddress string
 	instanceServiceOptions []grpc.DialOption
 	phase                  RunOnceInstancePhase
-	instance               *gameInstance
+	instance               *GameInstance
 	instanceID             string
 }
 
@@ -82,7 +82,7 @@ func (r *RunOnceInstance) Run(ctx context.Context) error {
 	}
 
 	//
-	gameID, gameInstance, err := game.runGameInstance()
+	gameID, gameInstance, err := game.RunGameInstance()
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ func (r *RunOnceInstance) Run(ctx context.Context) error {
 	r.instanceID = gameID
 
 	// register with service
-	slog.InfoContext(ctx, "registering game")
+	slog.InfoContext(ctx, "registering game", "instanceID", r.instanceID)
 	matcherConnection, err := r.net.Client(ctx, r.matcherAddress, r.matcherOptions...)
 	if err != nil {
 		return err

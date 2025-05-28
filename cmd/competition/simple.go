@@ -21,7 +21,7 @@ type gameInstance struct {
 	advertiseAddress   string
 	competitionService string
 	initSleepTime      time.Duration
-	s                  junk.Component
+	grpcListener       junk.Component
 }
 
 func (g *gameInstance) Start(setup context.Context, run context.Context) error {
@@ -41,9 +41,9 @@ func (g *gameInstance) Start(setup context.Context, run context.Context) error {
 	}); err != nil {
 		return fmt.Errorf("failed to setup listener: %w", err)
 	} else {
-		g.s = service
+		g.grpcListener = service
 	}
-	if err := g.s.Start(run); err != nil {
+	if err := g.grpcListener.Start(run); err != nil {
 		return fmt.Errorf("failed to start service: %w", err)
 	}
 	//
@@ -65,11 +65,17 @@ func (g *gameInstance) Start(setup context.Context, run context.Context) error {
 	}); err != nil {
 		return fmt.Errorf("failed to register game: %w", err)
 	}
+	id, _, err := game.RunGameInstance()
+	if err != nil {
+		return err
+	}
+
 	i := wire.NewGameEngineOrchestrationClient(conn)
+	slog.InfoContext(setup, "marking engine as available", "instanceID", id)
 	if _, err := i.EngineAvailable(setup, &wire.EngineAvailableIn{
-		ForGame: "github.com/meschbach/npc/competition/simple/v0",
-		//todo: advertised address might be different than the one we're listening on'
-		StartURL: g.advertiseAddress,
+		ForGame:    "github.com/meschbach/npc/competition/simple/v0",
+		StartURL:   g.advertiseAddress,
+		InstanceID: id,
 	}); err != nil {
 		return fmt.Errorf("failed to mark engine as available: %w", err)
 	}
@@ -79,15 +85,15 @@ func (g *gameInstance) Start(setup context.Context, run context.Context) error {
 
 func (g *gameInstance) Stop(ctx context.Context) error {
 	var problems []error
-	if g.s != nil {
-		problems = append(problems, g.s.Stop(ctx))
+	if g.grpcListener != nil {
+		problems = append(problems, g.grpcListener.Stop(ctx))
 	}
 	return errors.Join(problems...)
 }
 
-func runSimpleGameInstance(cmd *cobra.Command, args []string) {
-	if err := proc.AsService(&gameInstance{}); err != nil {
-		fmt.Printf("Failed to run because %s\n", err)
+func runSimpleGameInstance(cmd *cobra.Command, args []string, i *gameInstance) {
+	if err := proc.AsService(i); err != nil {
+		fmt.Printf("Failed to run because %grpcListener\n", err)
 		return
 	}
 }
@@ -97,7 +103,9 @@ func simpleGamesCommands() *cobra.Command {
 	gameInstance := &cobra.Command{
 		Use:   "game-instance",
 		Short: "Runs a single simple game instance once",
-		Run:   runSimpleGameInstance,
+		Run: func(cmd *cobra.Command, args []string) {
+			runSimpleGameInstance(cmd, args, i)
+		},
 	}
 	gameInstanceFlags := gameInstance.PersistentFlags()
 	gameInstanceFlags.StringVarP(&i.serviceAddress, "service-address", "s", "127.0.0.1:11235", "address of game to listen too")

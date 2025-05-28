@@ -68,7 +68,7 @@ func (m *matcher) ensureGame(ctx context.Context, game string) error {
 }
 
 func (m *matcher) registerInstance(ctx context.Context, game, id, instanceURL string) (string, error) {
-	slog.InfoContext(ctx, "matcher.registerInstance", "Game", game, "instanceURL", instanceURL)
+	slog.InfoContext(ctx, "matcher.registerInstance", "Game", game, "instanceURL", instanceURL, "instanceID", id)
 	lobby, err := m.findGameLobby(ctx, game)
 	if err != nil {
 		return "", err

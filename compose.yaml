@@ -30,3 +30,28 @@ services:
       - "ENV=dev-compose"
     depends_on:
       - competition
+  player_1:
+    build:
+      context: .
+      dockerfile: ./cmd/simple/Dockerfile
+    command:
+      - "--competition-address"
+      - "competition:11234"
+      - "--startup-delay=1s"
+    environment:
+      - "ENV=dev-compose"
+    depends_on:
+      - simple
+  player_2:
+    build:
+      context: .
+      dockerfile: ./cmd/simple/Dockerfile
+    command:
+      - "--competition-address"
+      - "competition:11234"
+      - "--startup-delay=1s"
+    environment:
+      - "ENV=dev-compose"
+    depends_on:
+      - competition
+      - simple
