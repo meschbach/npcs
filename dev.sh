@@ -32,7 +32,7 @@ function compile() {
 
   echo "Compiling $output"
   if [ -z "$ARCHITECTURES" ]; then
-    go build -o $output ./$entry
+    go build -o ./bin/$output ./$entry
   else
     for os in $OPERATING_SYSTEMS; do
       for arch in $ARCHITECTURES; do
@@ -48,6 +48,7 @@ function compile() {
 mkdir -p bin
 compile cmd/competition competition
 compile cmd/simple simple
+compile cmd/simpled simpled
 
 echo "All programs compiled."
 

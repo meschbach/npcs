@@ -13,10 +13,8 @@ services:
   simple:
     build:
       context: .
-      dockerfile: ./cmd/competition/Dockerfile
-    entrypoint:
-      - "/service"
-      - "simple-game"
+      dockerfile: ./cmd/simpled/Dockerfile
+    command:
       - "game-instance"
       - "--competition-service"
       - "competition:11234"
