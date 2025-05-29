@@ -98,7 +98,7 @@ func runSimpleGameInstance(cmd *cobra.Command, args []string, i *gameInstance) {
 	}
 }
 
-func simpleGamesCommands() *cobra.Command {
+func singleGameInstance() *cobra.Command {
 	i := &gameInstance{}
 	gameInstance := &cobra.Command{
 		Use:   "game-instance",
@@ -114,11 +114,5 @@ func simpleGamesCommands() *cobra.Command {
 	//todo: really it would be better to retry but concentrated on delivery first
 	gameInstanceFlags.DurationVarP(&i.initSleepTime, "init-sleep-time", "t", 2*time.Second, "time to sleep before registering the game")
 
-	root := &cobra.Command{
-		Use:   "simple-game",
-		Short: "Testable game service",
-	}
-	root.AddCommand(gameInstance)
-
-	return root
+	return gameInstance
 }
