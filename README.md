@@ -33,4 +33,5 @@ go build -o t3-cli ./cmd/t3 && ./t3-cli  hci fill-in
 ```
 
 ## Implemented games
+* Simple - A game with a pre-determined winner.
 * t3 - A tic-tac-toe game.
