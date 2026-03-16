@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+	"time"
+
 	"github.com/meschbach/npcs/competition/simple"
 	"github.com/meschbach/npcs/competition/wire"
 	"github.com/meschbach/npcs/junk"
@@ -12,8 +15,6 @@ import (
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"log/slog"
-	"time"
 )
 
 type gameInstance struct {
@@ -24,7 +25,7 @@ type gameInstance struct {
 	grpcListener       junk.Component
 }
 
-func (g *gameInstance) Start(setup context.Context, run context.Context) error {
+func (g *gameInstance) Start(setup, run context.Context) error {
 	// ensure advertise address is set
 	if g.advertiseAddress == "" {
 		g.advertiseAddress = g.serviceAddress
@@ -49,7 +50,7 @@ func (g *gameInstance) Start(setup context.Context, run context.Context) error {
 	//
 	slog.InfoContext(setup, "init sleep", "init", g.initSleepTime.String())
 	//todo: for some reason initSleepTime is always zero by this time; need to fix that
-	//if g.initSleepTime > 0 {
+	// if g.initSleepTime > 0 {
 	time.Sleep(1 * time.Second)
 	//}
 

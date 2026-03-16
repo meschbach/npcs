@@ -3,9 +3,10 @@ package network
 import (
 	"context"
 	"errors"
+	"io"
+
 	"github.com/meschbach/npcs/t3"
 	"google.golang.org/grpc"
-	"io"
 )
 
 type PushClient struct {
@@ -32,7 +33,6 @@ func NewPushClient(server, gameID, token string, player Session, grpcOpts ...grp
 }
 
 func (p *PushClient) Serve(ctx context.Context) (problem error) {
-	//dial out
 	conn, err := grpc.NewClient(p.server, p.grpcOpts...)
 	if err != nil {
 		return err
@@ -53,31 +53,59 @@ func (p *PushClient) Serve(ctx context.Context) (problem error) {
 		if err != nil {
 			return err
 		}
-		if m.Initial != nil {
-			p.playerID = m.Initial.YourPlayer
+		done, err := p.handleMessage(ctx, c, m)
+		if err != nil {
+			return err
 		}
-		if m.Move != nil {
-			if err := p.player.MoveMade(ctx, t3.Move{
-				Player: int(m.Move.Player),
-				Row:    int(m.Move.Row),
-				Column: int(m.Move.Column),
-			}); err != nil {
-				return err
-			}
-		}
-		if m.DoTurn != nil {
-			if err := p.pushMove(ctx, c); err != nil {
-				return err
-			}
-		}
-
-		if m.Conclusion != nil {
-			if err := p.player.Done(ctx); err != nil {
-				return err
-			}
+		if done {
 			return nil
 		}
 	}
+}
+
+func (p *PushClient) handleMessage(ctx context.Context, c T3PushClient, m *T3PushEvent) (bool, error) {
+	p.handleInitial(m)
+	if err := p.handleMove(ctx, m); err != nil {
+		return false, err
+	}
+	if err := p.handleDoTurn(ctx, c, m); err != nil {
+		return false, err
+	}
+	return p.handleConclusion(ctx, m)
+}
+
+func (p *PushClient) handleInitial(m *T3PushEvent) {
+	if m.Initial != nil {
+		p.playerID = m.Initial.YourPlayer
+	}
+}
+
+func (p *PushClient) handleMove(ctx context.Context, m *T3PushEvent) error {
+	if m.Move == nil {
+		return nil
+	}
+	return p.player.MoveMade(ctx, t3.Move{
+		Player: int(m.Move.Player),
+		Row:    int(m.Move.Row),
+		Column: int(m.Move.Column),
+	})
+}
+
+func (p *PushClient) handleDoTurn(ctx context.Context, c T3PushClient, m *T3PushEvent) error {
+	if m.DoTurn == nil {
+		return nil
+	}
+	return p.pushMove(ctx, c)
+}
+
+func (p *PushClient) handleConclusion(ctx context.Context, m *T3PushEvent) (bool, error) {
+	if m.Conclusion == nil {
+		return false, nil
+	}
+	if err := p.player.Done(ctx); err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 func (p *PushClient) pushMove(ctx context.Context, c T3PushClient) error {
@@ -93,18 +121,4 @@ func (p *PushClient) pushMove(ctx context.Context, c T3PushClient) error {
 		},
 	})
 	return err
-}
-
-func (p *PushClient) doMove(ctx context.Context, client T3PushClient) error {
-	move, err := p.player.NextMove(ctx)
-	if err != nil {
-		return err
-	}
-	if _, err := client.Move(ctx, &PushMoveIn{
-		GameID: p.gameID,
-		Move:   &NextMoveOut{Row: int64(move.Row), Column: int64(move.Column)},
-	}); err != nil {
-		return err
-	}
-	return nil
 }

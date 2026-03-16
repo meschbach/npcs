@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/meschbach/npcs/competition/wire"
 	"github.com/meschbach/npcs/junk/realnet"
 	"github.com/spf13/cobra"

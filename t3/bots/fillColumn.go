@@ -3,6 +3,7 @@ package bots
 import (
 	"context"
 	"errors"
+
 	"github.com/meschbach/npcs/t3"
 )
 

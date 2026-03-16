@@ -3,13 +3,14 @@ package network
 import (
 	"context"
 	"errors"
+	"strings"
+	"sync"
+
 	"github.com/meschbach/npcs/t3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"strings"
-	"sync"
 )
 
 type PushService struct {
@@ -30,25 +31,10 @@ var Unauthenticated = status.New(codes.Unauthenticated, "no authorization").Err(
 var Unauthorized = status.New(codes.Unauthenticated, "unauthorized").Err()
 
 func (p *PushService) ConnectToGame(in *JoinGameIn, out grpc.ServerStreamingServer[T3PushEvent]) error {
-	md, hasMetaData := metadata.FromIncomingContext(out.Context())
-	if !hasMetaData {
-		return Unauthenticated
+	game, err := p.resolveGame(out.Context(), in.GameID)
+	if err != nil {
+		return err
 	}
-	auth, hasAuth := md["authorization"]
-	if !hasAuth || len(auth) != 1 {
-		return Unauthenticated
-	}
-
-	parts := strings.SplitN(auth[0], " ", 2)
-	if len(parts) != 2 {
-		return Unauthorized
-	}
-
-	game, has := p.Router.hasGame(parts[1], in.GameID)
-	if !has {
-		return Unauthorized
-	}
-
 	if err := out.Send(&T3PushEvent{
 		Initial: &JoinGameOut{
 			YourPlayer: game.playerID,
@@ -56,41 +42,13 @@ func (p *PushService) ConnectToGame(in *JoinGameIn, out grpc.ServerStreamingServ
 	}); err != nil {
 		return err
 	}
-
-	for {
-		ctx := out.Context()
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case event, ok := <-game.outgoing:
-			if !ok { //closed
-				return nil
-			}
-			if err := out.Send(event); err != nil {
-				return err
-			}
-		}
-	}
+	return streamEvents(out.Context(), out, game)
 }
 
 func (p *PushService) Move(ctx context.Context, move *PushMoveIn) (*PushMoveOut, error) {
-	md, hasMetaData := metadata.FromIncomingContext(ctx)
-	if !hasMetaData {
-		return nil, Unauthenticated
-	}
-	auth, hasAuth := md["authorization"]
-	if !hasAuth || len(auth) != 1 {
-		return nil, Unauthenticated
-	}
-
-	parts := strings.SplitN(auth[0], " ", 2)
-	if len(parts) != 2 {
-		return nil, Unauthorized
-	}
-
-	game, has := p.Router.hasGame(parts[1], move.GameID)
-	if !has {
-		return nil, Unauthorized
+	game, err := p.resolveGame(ctx, move.GameID)
+	if err != nil {
+		return nil, err
 	}
 	select {
 	case <-ctx.Done():
@@ -103,19 +61,48 @@ func (p *PushService) Move(ctx context.Context, move *PushMoveIn) (*PushMoveOut,
 	}
 }
 
+func (p *PushService) resolveGame(ctx context.Context, gameID string) (*pushGame, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, Unauthenticated
+	}
+	auth, ok := md["authorization"]
+	if !ok || len(auth) != 1 {
+		return nil, Unauthenticated
+	}
+	parts := strings.SplitN(auth[0], " ", 2)
+	if len(parts) != 2 {
+		return nil, Unauthorized
+	}
+	game, has := p.Router.hasGame(parts[1], gameID)
+	if !has {
+		return nil, Unauthorized
+	}
+	return game, nil
+}
+
+func streamEvents(ctx context.Context, out grpc.ServerStreamingServer[T3PushEvent], game *pushGame) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case event, ok := <-game.outgoing:
+			if !ok {
+				return nil
+			}
+			if err := out.Send(event); err != nil {
+				return err
+			}
+		}
+	}
+}
+
 type PushServiceRouter struct {
 	changes       sync.Mutex
 	playerByToken map[string]*pushTokenSlot
 }
 
-func newPushServiceRouter() *PushServiceRouter {
-	return &PushServiceRouter{
-		changes:       sync.Mutex{},
-		playerByToken: make(map[string]*pushTokenSlot),
-	}
-}
-
-func (p *PushServiceRouter) Register(token string, gameID string, side int64) (t3.Player, error) {
+func (p *PushServiceRouter) Register(token, gameID string, side int64) (t3.Player, error) {
 	p.changes.Lock()
 	defer p.changes.Unlock()
 	slot, has := p.playerByToken[token]
@@ -173,7 +160,7 @@ func (p *PushServiceRouter) hasGame(token, gameID string) (*pushGame, bool) {
 	if !has {
 		return nil, false
 	}
-	//no longer need p.changes
+	// no longer need p.changes
 
 	slot.changes.Lock()
 	defer slot.changes.Unlock()
@@ -186,7 +173,7 @@ func (p *PushServiceRouter) hasGame(token, gameID string) (*pushGame, bool) {
 
 type pushTokenSlot struct {
 	changes sync.Mutex
-	//gameID -> game
+	// gameID -> game
 	games map[string]*pushGame
 }
 
@@ -197,7 +184,7 @@ type pushGame struct {
 }
 
 func (p *pushGame) NextPlay(ctx context.Context) (t3.Move, error) {
-	//notify the client we would like a move
+	// notify the client we would like a move
 	select {
 	case <-ctx.Done():
 		return t3.Move{}, ctx.Err()
@@ -206,7 +193,7 @@ func (p *pushGame) NextPlay(ctx context.Context) (t3.Move, error) {
 	}:
 	}
 
-	//Wait for a reply
+	// Wait for a reply
 	select {
 	case m := <-p.moves:
 		return m, nil

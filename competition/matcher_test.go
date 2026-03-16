@@ -3,14 +3,16 @@ package competition
 import (
 	"context"
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"sync"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSimpleGameLifecycle(t *testing.T) {
-	ctx, done := context.WithCancel(context.Background())
+	t.Parallel()
+	ctx, done := context.WithCancel(t.Context())
 	t.Cleanup(done)
 
 	exampleGame := "test-game"
@@ -23,13 +25,13 @@ func TestSimpleGameLifecycle(t *testing.T) {
 
 	baseUserName := "user-"
 	var allJoined sync.WaitGroup
-	for i := 0; i < 2; i = i + 1 {
+	for i := 0; i < 2; i++ {
 		allJoined.Add(1)
 		playerID := fmt.Sprintf("%s-%d", baseUserName, i)
 		go func() {
 			_, err := core.findMatchInstance(ctx, exampleGame, playerID)
 			allJoined.Done()
-			require.NoError(t, err, "matcher should not have failed on iteration %d", i)
+			assert.NoError(t, err, "matcher should not have failed on iteration %d", i)
 		}()
 	}
 	allJoined.Wait()
@@ -37,5 +39,5 @@ func TestSimpleGameLifecycle(t *testing.T) {
 	require.NoError(t, core.gameCompleted(ctx, exampleGame, exampleInstanceID, baseUserName+"-0"))
 
 	gameHistory := core.findAllGamesForPlayer(ctx, baseUserName+"-0")
-	assert.Equal(t, 1, len(gameHistory))
+	assert.Len(t, gameHistory, 1)
 }

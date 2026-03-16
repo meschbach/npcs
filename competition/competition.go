@@ -3,11 +3,12 @@ package competition
 import (
 	"context"
 	"crypto/tls"
+	"log/slog"
+	"sync"
+
 	"github.com/meschbach/npcs/competition/wire"
 	"github.com/meschbach/npcs/junk/realnet"
 	"google.golang.org/grpc"
-	"log/slog"
-	"sync"
 )
 
 type SystemPhase int
@@ -52,10 +53,8 @@ func (s *System) Serve(ctx context.Context) error {
 	}
 	s.transitionToReady()
 	slog.InfoContext(ctx, "Competition system ready")
-	select {
-	case <-ctx.Done():
-		return listener.Stop(ctx)
-	}
+	<-ctx.Done()
+	return listener.Stop(ctx)
 }
 
 func (s *System) transitionToReady() {

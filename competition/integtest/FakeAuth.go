@@ -1,16 +1,20 @@
+// Package integtest provides integration test utilities.
 package integtest
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc/metadata"
 	"strings"
 	"sync"
 	"testing"
+
+	"github.com/go-faker/faker/v4"
+	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc/metadata"
 )
+
+type contextKey string
 
 type FakeAuth struct {
 	changes      sync.Mutex
@@ -29,7 +33,7 @@ type fakerUserProfile struct {
 	ID    string `faker:"uuid_hyphenated"`
 }
 
-var contextKey = "fake-auth"
+var fakeAuthKey = contextKey("fake-auth")
 
 func (f *FakeAuth) NewUser(parent context.Context, t *testing.T, name string) (token string, ctx context.Context) {
 	f.changes.Lock()
@@ -42,12 +46,12 @@ func (f *FakeAuth) NewUser(parent context.Context, t *testing.T, name string) (t
 	}
 	f.tokensToUser[p.Token] = u
 
-	userContext := context.WithValue(parent, contextKey, u)
+	userContext := context.WithValue(parent, fakeAuthKey, u)
 	return p.Token, userContext
 }
 
 func (f *FakeAuth) GetUserID(ctx context.Context) (string, error) {
-	userContext, ok := ctx.Value(contextKey).(*fakeUser)
+	userContext, ok := ctx.Value(fakeAuthKey).(*fakeUser)
 	if !ok {
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {

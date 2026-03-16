@@ -2,12 +2,14 @@ package tproc
 
 import (
 	"context"
-	"github.com/meschbach/npcs/junk/proc"
+	"errors"
 	"log/slog"
+
+	"github.com/meschbach/npcs/junk/proc"
 )
 
-func RunOnce(name string, run func(ctx context.Context) error) error {
-	return proc.RunOnce(func(ctx context.Context) error {
+func RunOnce(name string, run func(context.Context) error) error {
+	return proc.RunOnce(func(ctx context.Context) (problem error) {
 		var err error
 		slog.InfoContext(ctx, "Starting OTEL system")
 		shutdownOtel, err := setupOTelSDK(ctx, name)
@@ -15,7 +17,9 @@ func RunOnce(name string, run func(ctx context.Context) error) error {
 			slog.ErrorContext(ctx, "Failed to start OTEL system", "error", err)
 			return err
 		}
-		defer shutdownOtel(ctx)
+		defer func() {
+			problem = errors.Join(shutdownOtel(ctx), err)
+		}()
 		slog.InfoContext(ctx, "Starting application")
 		return run(ctx)
 	})

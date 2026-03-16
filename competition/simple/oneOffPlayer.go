@@ -2,10 +2,13 @@ package simple
 
 import (
 	"context"
+	"errors"
+
+	"log/slog"
+
 	"github.com/meschbach/npcs/competition/wire"
 	"github.com/meschbach/npcs/junk/realnet"
 	"google.golang.org/grpc"
-	"log/slog"
 )
 
 type RunOncePlayerOpt func(*RunOncePlayer)
@@ -48,12 +51,14 @@ func NewRunOnce(opts ...RunOncePlayerOpt) *RunOncePlayer {
 	return r
 }
 
-func (r *RunOncePlayer) Run(ctx context.Context) error {
+func (r *RunOncePlayer) Run(ctx context.Context) (problem error) {
 	competitionClientWire, err := r.net.Client(ctx, r.matcherAddress, r.matcherOptions...)
 	if err != nil {
 		return err
 	}
-	defer competitionClientWire.Close()
+	defer func() {
+		problem = errors.Join(competitionClientWire.Close(), problem)
+	}()
 	competitionClient := wire.NewCompetitionV1Client(competitionClientWire)
 	matchOut, err := competitionClient.QuickMatch(ctx, &wire.QuickMatchIn{
 		PlayerName: "test-1234",
@@ -68,7 +73,9 @@ func (r *RunOncePlayer) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer gameClient.Close()
+	defer func() {
+		problem = errors.Join(gameClient.Close(), problem)
+	}()
 	simpleGameClient := NewSimpleGameClient(gameClient)
 	slog.InfoContext(ctx, "Connecting to game", "game.id", matchOut.UUID, "game.url", matchOut.MatchURL)
 	result, err := simpleGameClient.Joined(ctx, &JoinedIn{

@@ -4,16 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/meschbach/npcs/t3"
 	"github.com/meschbach/npcs/t3/bots"
 	"github.com/meschbach/npcs/t3/network"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func RunGame(ctx context.Context, serviceURL string) (err error) {
 	fmt.Printf("Connecting to bot...")
-	var opts []grpc.DialOption
-	opts = append(opts, grpc.WithInsecure())
+	opts := make([]grpc.DialOption, 0, 1)
+	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	conn, err := grpc.NewClient(serviceURL, opts...)
 	if err != nil {
 		fmt.Printf("\nFailed to connect to bot because %s\n", err.Error())

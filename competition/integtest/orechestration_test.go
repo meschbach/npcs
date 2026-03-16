@@ -2,25 +2,27 @@ package integtest
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/meschbach/npcs/competition"
 	"github.com/meschbach/npcs/competition/simple"
 	"github.com/meschbach/npcs/competition/wire"
-	"github.com/meschbach/npcs/junk/inProc"
+	"github.com/meschbach/npcs/junk/inproc"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestSimpleOneOffGame(t *testing.T) {
-	sysContext, sysDone := context.WithTimeout(context.Background(), 5*time.Second)
+	t.Parallel()
+	sysContext, sysDone := context.WithTimeout(t.Context(), 5*time.Second)
 	defer sysDone()
 
 	matcherAddress := "competition.npcs:12345"
-	net := inProc.NewGRPCNetwork(t)
+	net := inproc.NewGRPCNetwork(t)
 	competitionSystem := competition.NewCompetitionSystem(nil, matcherAddress, net, nil)
 	go func() {
-		require.NoError(t, competitionSystem.Serve(sysContext))
+		assert.NoError(t, competitionSystem.Serve(sysContext))
 	}()
 	competitionSystem.WaitForReady()
 
@@ -33,9 +35,9 @@ func TestSimpleOneOffGame(t *testing.T) {
 	instance.WaitForStartup()
 
 	player1 := simple.NewRunOnce(simple.WithPlayerNetwork(net), simple.WithPlayerMatcherAddress(matcherAddress))
-	go func() { require.NoError(t, player1.Run(sysContext)) }()
+	go func() { assert.NoError(t, player1.Run(sysContext)) }()
 	player2 := simple.NewRunOnce(simple.WithPlayerNetwork(net), simple.WithPlayerMatcherAddress(matcherAddress))
-	go func() { require.NoError(t, player2.Run(sysContext)) }()
+	go func() { assert.NoError(t, player2.Run(sysContext)) }()
 
 	//todo: figure out how to sync with matcher for game completion
 	require.NoError(t, instance.WaitForCompletion(sysContext))

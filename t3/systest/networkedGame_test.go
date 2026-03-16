@@ -3,16 +3,17 @@ package systest
 import (
 	"context"
 	"errors"
+	"net"
+	"sync"
+	"testing"
+
 	"github.com/meschbach/npcs/t3"
 	"github.com/meschbach/npcs/t3/network"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
-	"net"
-	"sync"
-	"testing"
-	"time"
 )
 
 type ScriptedPlayer struct {
@@ -25,12 +26,13 @@ func (s *ScriptedPlayer) MoveMade(ctx context.Context, otherPlayer t3.Move) erro
 
 func (s *ScriptedPlayer) NextMove(ctx context.Context) (move t3.Move, err error) {
 	count := len(s.moves)
-	if count == 0 {
+	switch count {
+	case 0:
 		return move, errors.New("no moves left")
-	} else if count == 1 {
+	case 1:
 		move = s.moves[0]
 		s.moves = nil
-	} else {
+	default:
 		move, s.moves = s.moves[0], s.moves[1:]
 	}
 	return move, nil
@@ -41,8 +43,8 @@ func (s *ScriptedPlayer) Done(ctx context.Context) error {
 }
 
 func TestNetworkedGame(t *testing.T) {
-	ctx, done := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	t.Cleanup(done)
+	t.Parallel()
+	ctx := t.Context()
 
 	dequeueLock := &sync.Mutex{}
 	players := []network.Session{
@@ -70,13 +72,13 @@ func TestNetworkedGame(t *testing.T) {
 	s := grpc.NewServer()
 	network.RegisterT3Server(s, h)
 	go func() {
-		require.NoError(t, s.Serve(fabric))
+		assert.NoError(t, s.Serve(fabric))
 	}()
 	t.Cleanup(func() {
 		s.GracefulStop()
 	})
 
-	c, err := grpc.DialContext(ctx, "bufnet", grpc.WithInsecure(), grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
+	c, err := grpc.NewClient("passthrough:///bufnet", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 		return fabric.DialContext(ctx)
 	}))
 	require.NoError(t, err)
@@ -103,11 +105,12 @@ func TestNetworkedGame(t *testing.T) {
 
 func unshiftSlice[T any](in []T) (out T, remainder []T) {
 	count := len(in)
-	if count == 0 {
+	switch count {
+	case 0:
 		return out, remainder
-	} else if count == 1 {
+	case 1:
 		return in[0], nil
-	} else {
+	default:
 		return in[0], in[1:]
 	}
 }

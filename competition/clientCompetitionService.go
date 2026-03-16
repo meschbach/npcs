@@ -2,8 +2,9 @@ package competition
 
 import (
 	"context"
-	"github.com/meschbach/npcs/competition/wire"
 	"log/slog"
+
+	"github.com/meschbach/npcs/competition/wire"
 )
 
 // clientCompetitionService is a gRPC server implementation for managing player competitions and game results.

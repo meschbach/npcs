@@ -18,7 +18,6 @@ type ChanPlayer struct {
 }
 
 func NewPlayer(input <-chan Move) *ChanPlayer {
-	//outputs := make(chan Move, 8)
 	return &ChanPlayer{
 		input: input,
 		//output: outputs,

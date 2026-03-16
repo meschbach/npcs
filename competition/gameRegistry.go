@@ -2,6 +2,7 @@ package competition
 
 import (
 	"context"
+
 	"github.com/meschbach/npcs/competition/wire"
 )
 
@@ -21,7 +22,7 @@ func (g *gameRegistryService) ListRegisteredGames(ctx context.Context, in *wire.
 	defer g.core.state.Unlock()
 
 	out := &wire.ListRegisteredGamesOut{}
-	for name, _ := range g.core.gameMatches {
+	for name := range g.core.gameMatches {
 		out.Games = append(out.Games, &wire.RegisteredGame{
 			Name: name,
 			Id:   name,

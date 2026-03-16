@@ -1,3 +1,4 @@
+// Package junk provides experimental utilities and prototypes.
 package junk
 
 import "context"

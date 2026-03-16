@@ -5,16 +5,17 @@ package simple
 import (
 	"context"
 	"errors"
-	"github.com/google/uuid"
 	"log/slog"
 	"sync"
+
+	"github.com/google/uuid"
 )
 
 type gamePhase int
 
 const (
-	gamePhase_waitingForPlayers gamePhase = iota
-	gamePhase_done
+	gamePhaseWaitingForPlayers gamePhase = iota
+	gamePhaseDone
 )
 
 type GameInstance struct {
@@ -42,8 +43,8 @@ func (g *GameInstance) joinPlayer(ctx context.Context, player string) bool {
 	if won {
 		g.winner = player
 	}
-	if g.phase != gamePhase_done {
-		g.phase = gamePhase_done
+	if g.phase != gamePhaseDone {
+		g.phase = gamePhaseDone
 	}
 
 	slog.InfoContext(ctx, "Players joined", "won", won)
@@ -57,7 +58,7 @@ func (g *GameInstance) waitOnGameCompletion() {
 	g.state.Lock()
 	defer g.state.Unlock()
 
-	for g.phase != gamePhase_done {
+	for g.phase != gamePhaseDone {
 		slog.Info("GameInstance waiting")
 		g.changes.Wait()
 	}
@@ -113,7 +114,7 @@ func (s *GameService) RunGameInstance() (string, *GameInstance, error) {
 	g := &GameInstance{
 		state:       lock,
 		changes:     sync.NewCond(lock),
-		phase:       gamePhase_waitingForPlayers,
+		phase:       gamePhaseWaitingForPlayers,
 		joinedCount: 0,
 	}
 

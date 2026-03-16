@@ -1,0 +1,101 @@
+version: "2"
+
+run:
+  timeout: 10m
+  tests: true
+
+linters:
+  enable:
+    # Core
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+
+    # Security
+    - gosec
+
+    # Code quality
+    - gocritic
+    - gocyclo
+    - dupl
+    - funlen
+    - gocheckcompilerdirectives
+    - gocognit
+# TODO: Enable
+#    - godoclint
+    - misspell
+    - dogsled
+    - makezero
+    - prealloc
+# TODO: Enable
+#    - revive
+
+    # Testing
+    - paralleltest
+    - testifylint
+
+    # Modern practices
+    - exhaustive
+    - forbidigo
+  settings:
+    gocyclo:
+      min-complexity: 8
+    gosec:
+      excludes:
+        - G204  # Subprocess launching may be allowed in this context
+    dupl:
+      threshold: 80
+    misspell:
+      locale: US
+    forbidigo:
+      forbid:
+        - pattern: "context.Background"
+          msg: "Pass a context in or used the past context.  In tests use t.Context()"
+        - pattern: "context.TODO"
+          msg: "Use a specific context or pass a context in.  In tests use t.Context()"
+    staticcheck:
+      checks:
+        - "all"
+        - "-ST1012"  # Error variable naming (ErrFoo) — not enforcing this convention
+
+# TODO
+#    godoclint:
+#      options:
+#        rules:
+#          - require-doc
+#          - start-with-name
+#          - max-len
+
+    funlen:
+      lines: 150
+      statements: 100
+
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+      disabled-checks:
+        - dupImport
+        - ifElseChain
+        - octalLiteral
+        - whyNoLint
+        - wrapperFunc
+
+    errcheck:
+      check-type-assertions: true
+      check-blank: false  # Allow _ = errors for explicit ignoring
+      exclude-functions:
+        - (fmt\.Fprintf).*outputWriter  # CLI user output is legitimate
+
+    paralleltest:
+      ignore-missing-subtests: true  # Require explicit t.Parallel() calls for all tests
+
+formatters:
+  enable:
+    - gofmt
+    - goimports

@@ -1,10 +1,12 @@
+// Package tui provides a terminal user interface for playing tic-tac-toe.
 package tui
 
 import (
 	"errors"
 	"fmt"
-	"github.com/meschbach/npcs/t3"
 	"strings"
+
+	"github.com/meschbach/npcs/t3"
 )
 
 func renderBoardAsString(b *t3.Board) (string, error) {
@@ -23,7 +25,7 @@ func renderBoardAsString(b *t3.Board) (string, error) {
 			} else {
 				sym = renderSideAsSymbol(who)
 			}
-			builder.WriteString(fmt.Sprintf(" %s ", sym))
+			fmt.Fprintf(&builder, " %s ", sym)
 			if col != 2 {
 				builder.WriteString("|")
 			} else {

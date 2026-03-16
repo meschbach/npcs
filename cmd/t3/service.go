@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
+
 	"github.com/meschbach/npcs/t3/bots"
 	"github.com/meschbach/npcs/t3/network"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
-	"net"
 )
 
 func serviceCommands() *cobra.Command {

@@ -3,29 +3,31 @@ package systest
 import (
 	"context"
 	"errors"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/go-faker/faker/v4"
 	"github.com/google/uuid"
-	"github.com/meschbach/npcs/junk/inProc"
+	"github.com/meschbach/npcs/junk/inproc"
 	"github.com/meschbach/npcs/t3"
 	"github.com/meschbach/npcs/t3/bots"
 	"github.com/meschbach/npcs/t3/network"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/thejerf/suture/v4"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/oauth"
-	"sync"
-	"testing"
-	"time"
 )
 
 func TestPushGame(t *testing.T) {
-	ctx, done := context.WithTimeout(context.Background(), 10*time.Second)
-	t.Cleanup(done)
+	t.Parallel()
+	ctx := t.Context()
 
 	gateway := network.NewPush()
 
-	net := inProc.NewGRPCNetwork(t)
+	net := inproc.NewGRPCNetwork(t)
 	physSrv := net.SpawnService(ctx, "push.npcs:54321", func(ctx context.Context, srv *grpc.Server) error {
 		network.RegisterT3PushServer(srv, gateway)
 		return nil
@@ -37,10 +39,8 @@ func TestPushGame(t *testing.T) {
 	supervisorResult := supervisor.ServeBackground(serviceContext)
 	t.Cleanup(func() {
 		serviceContextDone()
-		select {
-		case err := <-supervisorResult:
-			require.NotNil(t, err)
-		}
+		err := <-supervisorResult
+		require.ErrorIs(t, err, context.Canceled)
 	})
 
 	// configure game clients
@@ -56,7 +56,7 @@ func TestPushGame(t *testing.T) {
 	player2ServiceSide, err := gateway.Router.Register(player2Token, player2GameID.String(), 2)
 	require.NoError(t, err)
 
-	//launch clients
+	// launch clients
 	gamePlayers := &sync.WaitGroup{}
 	gamePlayers.Add(2)
 	go func() {
@@ -68,7 +68,7 @@ func TestPushGame(t *testing.T) {
 		creds := oauth.TokenSource{TokenSource: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: player1Token})}
 		player1Opts := append(net.ConnectOptions(), grpc.WithPerRPCCredentials(creds))
 		outgoing := network.NewPushClient("in-proc://push.npcs:54321", player1GameID.String(), player1Token, fillIn, player1Opts...)
-		require.NoError(t, outgoing.Serve(playerCtx))
+		assert.NoError(t, outgoing.Serve(playerCtx))
 	}()
 	go func() {
 		defer gamePlayers.Done()
@@ -82,7 +82,7 @@ func TestPushGame(t *testing.T) {
 		creds := oauth.TokenSource{TokenSource: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: player2Token})}
 		player2Opts := append(net.ConnectOptions(), grpc.WithPerRPCCredentials(creds))
 		outgoing := network.NewPushClient("in-proc://push.npcs:54321", player2GameID.String(), player2Token, columnFiller, player2Opts...)
-		require.NoError(t, outgoing.Serve(playerCtx))
+		assert.NoError(t, outgoing.Serve(playerCtx))
 	}()
 
 	g := t3.NewGame(player1ServiceSide, player2ServiceSide)

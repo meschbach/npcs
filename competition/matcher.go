@@ -3,9 +3,10 @@ package competition
 import (
 	"context"
 	"errors"
-	"github.com/meschbach/go-junk-bucket/pkg/fx"
 	"log/slog"
 	"sync"
+
+	"github.com/meschbach/go-junk-bucket/pkg/fx"
 )
 
 type matchedGame struct {

@@ -2,6 +2,7 @@ package network
 
 import (
 	"context"
+
 	"github.com/meschbach/npcs/t3"
 )
 

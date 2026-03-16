@@ -1,12 +1,14 @@
 package t3
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestBoard(t *testing.T) {
+	t.Parallel()
 	t.Run("Empty board should not be completed", func(t *testing.T) {
 		b := NewBoard()
 		assert.False(t, b.completed(1))

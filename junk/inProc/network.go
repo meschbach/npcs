@@ -1,11 +1,13 @@
-package inProc
+// Package inproc provides in-process gRPC networking for testing.
+package inproc
 
 import (
 	"context"
 	"fmt"
-	"google.golang.org/grpc/test/bufconn"
 	"net"
 	"sync"
+
+	"google.golang.org/grpc/test/bufconn"
 )
 
 type Network struct {

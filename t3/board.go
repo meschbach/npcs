@@ -1,3 +1,4 @@
+// Package t3 implements a tic-tac-toe game engine.
 package t3
 
 import "errors"

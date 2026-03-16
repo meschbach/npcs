@@ -24,7 +24,7 @@ type Game struct {
 	winner int
 }
 
-func NewGame(player1 Player, player2 Player) *Game {
+func NewGame(player1, player2 Player) *Game {
 	return &Game{
 		currentState: GameStatePreStart,
 		board:        NewBoard(),
@@ -37,30 +37,26 @@ func (t *Game) Step(ctx context.Context) error {
 	switch t.currentState {
 	case GameStatePreStart:
 		t.currentState = GameStatePlayer1Turn
-		return nil
 	case GameStatePlayer1Turn:
-		if err := t.doPlayerTurn(ctx, 1, t.p1); err != nil {
-			return err
-		}
-		if t.board.completed(1) {
-			t.currentState = GateStateConcluded
-			t.winner = 1
-		} else {
-			t.currentState = GameStatePlayer2Turn
-		}
+		return t.executeTurn(ctx, 1, t.p1, GameStatePlayer2Turn)
 	case GameStatePlayer2Turn:
-		if err := t.doPlayerTurn(ctx, 2, t.p2); err != nil {
-			return err
-		}
-		if t.board.completed(2) {
-			t.currentState = GateStateConcluded
-			t.winner = 2
-		} else {
-			t.currentState = GameStatePlayer1Turn
-		}
+		return t.executeTurn(ctx, 2, t.p2, GameStatePlayer1Turn)
 	case GateStateConcluded:
 	default:
 		return UnhandledGameState
+	}
+	return nil
+}
+
+func (t *Game) executeTurn(ctx context.Context, num int, player Player, nextState GameState) error {
+	if err := t.doPlayerTurn(ctx, num, player); err != nil {
+		return err
+	}
+	if t.board.completed(num) {
+		t.currentState = GateStateConcluded
+		t.winner = num
+	} else {
+		t.currentState = nextState
 	}
 	return nil
 }

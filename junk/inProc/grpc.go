@@ -1,10 +1,17 @@
-package inProc
+package inproc
 
 import (
 	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"log/slog"
+	"net"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/madflojo/testcerts"
 	"github.com/meschbach/npcs/junk"
 	"github.com/meschbach/npcs/junk/realnet"
@@ -12,13 +19,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/resolver"
-	"google.golang.org/grpc/resolver/manual"
-	"log/slog"
-	"net"
-	"strings"
-	"sync"
-	"testing"
-	"time"
 )
 
 type GRPCNetwork struct {
@@ -27,10 +27,9 @@ type GRPCNetwork struct {
 	publicKeyInfra    *testcerts.CertificateAuthority
 
 	//todo: resolver is a mess in terms of initial seeds versus actual.  might be better to build out a custom binding
-	//to avoid needing to update.
+	// to avoid needing to update.
 	resolverControl sync.Mutex
 	resolverState   resolver.State
-	resolver        *manual.Resolver
 }
 
 func NewGRPCNetwork(t *testing.T, opts ...GRPCOption) *GRPCNetwork {
@@ -49,9 +48,9 @@ func NewGRPCNetwork(t *testing.T, opts ...GRPCOption) *GRPCNetwork {
 
 type GRPCOption func(*GRPCNetwork)
 
-func WithNetwork(net *Network) GRPCOption {
+func WithNetwork(n *Network) GRPCOption {
 	return func(test *GRPCNetwork) {
-		test.physicalTransport = net
+		test.physicalTransport = n
 	}
 }
 
@@ -78,12 +77,12 @@ func (t *GRPCNetwork) SpawnService(ctx context.Context, address string, register
 	serviceTLS, err := tlsKeys.ConfigureTLSConfig(&tls.Config{})
 	require.NoError(t.t, err)
 
-	opts := append(otherOptions, grpc.Creds(credentials.NewTLS(serviceTLS)))
+	otherOptions = append(otherOptions, grpc.Creds(credentials.NewTLS(serviceTLS)))
 	return &TestListener{
 		address:  address,
 		on:       t,
 		register: register,
-		opts:     opts,
+		opts:     otherOptions,
 	}
 }
 

@@ -1,10 +1,12 @@
+// Package tproc provides test utilities for process lifecycle management.
 package tproc
 
 import (
 	"context"
 	"errors"
-	"github.com/meschbach/npcs/junk/proc"
 	"log/slog"
+
+	"github.com/meschbach/npcs/junk/proc"
 )
 
 type tracedWrapper struct {
@@ -13,7 +15,7 @@ type tracedWrapper struct {
 	shutdownOtel func(context.Context) error
 }
 
-func (t *tracedWrapper) Start(startup context.Context, run context.Context) error {
+func (t *tracedWrapper) Start(startup, run context.Context) error {
 	var err error
 	slog.InfoContext(startup, "Starting OTEL system")
 	t.shutdownOtel, err = setupOTelSDK(run, t.name)

@@ -7,6 +7,7 @@ import (
 )
 
 func RunOnce(run func(context.Context) error) error {
+	//nolint //background is reasonable for a context root
 	procContext, closeProc := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGSTOP)
 	defer closeProc()
 

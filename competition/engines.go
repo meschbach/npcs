@@ -3,6 +3,7 @@ package competition
 import (
 	"context"
 	"errors"
+
 	"github.com/meschbach/npcs/competition/wire"
 )
 

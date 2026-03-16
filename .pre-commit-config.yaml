@@ -1,13 +1,95 @@
+# Pre-commit hooks for Marvin project
+# Ensures code quality standards with fast developer feedback
+
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+  - repo: local
     hooks:
-    - id: check-yaml
-    - id: end-of-file-fixer
-    - id: trailing-whitespace
-    - id: check-added-large-files
--   repo: https://github.com/tekwizely/pre-commit-golang
-    rev: v1.0.0-rc.1
-    hooks:
-    - id: go-fmt
-    - id: go-test-mod
+      # Phase 1: Fast Local Checks
+      - id: go-fmt
+        name: go fmt
+        entry: gofmt
+        language: system
+        args: ["-w", "."]
+        files: '\.go$'
+        description: Format Go code according to standard conventions
+
+      - id: go-mod-tidy
+        name: go mod tidy
+        entry: go
+        language: system
+        args: ["mod", "tidy"]
+        files: '(go\.mod|go\.sum)$'
+        pass_filenames: false
+        description: Clean up go.mod and go.sum dependencies
+
+      - id: go-vet
+        name: go vet
+        entry: go
+        language: system
+        args: ["vet", "./..."]
+        files: '\.go$'
+        pass_filenames: false
+        description: Analyze Go code for potential issues
+
+      - id: golangci-lint
+        name: golangci-lint
+        entry: golangci-lint
+        language: system
+        args: ["run", "--timeout=5m"]
+        files: '\.go$'
+        pass_filenames: false
+        description: Comprehensive Go linting with default settings
+
+      # Phase 2: Unit Tests (Fast - matches CI unit tests)
+      - id: go-test-unit
+        name: go test unit
+        entry: go
+        language: system
+        args: ["test", "-count", "1", "./internal/..."]
+        files: '\.go$'
+        pass_filenames: false
+        description: Run unit tests to verify functionality
+
+      # Phase 3: Build Verification
+      - id: go-build-competition
+        name: go build marvin
+        entry: go
+        language: system
+        args: ["build", "-o", "bin/competition", "./cmd/competition"]
+        files: '\.go$'
+        pass_filenames: false
+        description: Verify competition artifacts
+
+      - id: go-build-simple
+        name: go build simple
+        entry: go
+        language: system
+        args: ["build", "-o", "bin/simple", "./cmd/simple"]
+        files: '\.go$'
+        pass_filenames: false
+        description: Verify simple artifacts
+
+      - id: go-build-simpled
+        name: go build simpled
+        entry: go
+        language: system
+        args: ["build", "-o", "bin/simpled", "./cmd/simpled"]
+        files: '\.go$'
+        pass_filenames: false
+        description: Verify simpled artifacts
+
+      - id: go-build-t3
+        name: go build t3
+        entry: go
+        language: system
+        args: ["build", "-o", "bin/t3", "./cmd/t3"]
+        files: '\.go$'
+        pass_filenames: false
+        description: Verify t3 artifacts
+
+
+# Global configuration
+default_stages: [pre-commit]
+fail_fast: false
+default_language_version:
+  golang: '1.26'

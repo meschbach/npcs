@@ -1,10 +1,12 @@
+// Package network provides gRPC-based multiplayer networking for tic-tac-toe.
 package network
 
 import (
 	"context"
 	"errors"
-	"github.com/meschbach/npcs/t3"
 	"sync"
+
+	"github.com/meschbach/npcs/t3"
 )
 
 type GameFactory = func(ctx context.Context) (Session, error)

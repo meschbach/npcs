@@ -1,12 +1,14 @@
+// Package realnet provides real network transport using gRPC over TLS.
 package realnet
 
 import (
 	"context"
 	"fmt"
-	junk2 "github.com/meschbach/npcs/junk"
-	"google.golang.org/grpc"
 	"log/slog"
 	"net"
+
+	junk2 "github.com/meschbach/npcs/junk"
+	"google.golang.org/grpc"
 )
 
 type GRPCRegister func(ctx context.Context, server *grpc.Server) error
@@ -73,7 +75,11 @@ func (g *gRPCListener) Start(ctx context.Context) error {
 		return err
 	}
 
-	go g.server.Serve(lis)
+	go func() {
+		if err := g.server.Serve(lis); err != nil {
+			slog.ErrorContext(ctx, "gRPC server failed", "error", err)
+		}
+	}()
 	return nil
 }
 

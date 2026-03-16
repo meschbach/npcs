@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/meschbach/npcs/t3/tui"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 func hciCommands() *cobra.Command {

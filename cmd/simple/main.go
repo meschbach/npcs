@@ -2,7 +2,12 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log/slog"
+	"os"
+	"time"
+
 	"github.com/meschbach/npcs/competition/simple"
 	"github.com/meschbach/npcs/competition/wire"
 	"github.com/meschbach/npcs/junk/proc/tproc"
@@ -10,9 +15,6 @@ import (
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"log/slog"
-	"os"
-	"time"
 )
 
 type playerInstance struct {
@@ -21,7 +23,7 @@ type playerInstance struct {
 	startupDelay       time.Duration
 }
 
-func (p *playerInstance) run(ctx context.Context) error {
+func (p *playerInstance) run(ctx context.Context) (problem error) {
 	if p.startupDelay != 0 {
 		time.Sleep(p.startupDelay)
 	}
@@ -31,7 +33,9 @@ func (p *playerInstance) run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer competitionClientWire.Close()
+	defer func() {
+		problem = errors.Join(problem, competitionClientWire.Close())
+	}()
 	competitionClient := wire.NewCompetitionV1Client(competitionClientWire)
 	matchOut, err := competitionClient.QuickMatch(ctx, &wire.QuickMatchIn{
 		PlayerName: p.playerID,
@@ -46,7 +50,9 @@ func (p *playerInstance) run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer gameClient.Close()
+	defer func() {
+		problem = errors.Join(gameClient.Close(), problem)
+	}()
 	simpleGameClient := simple.NewSimpleGameClient(gameClient)
 	slog.InfoContext(ctx, "Connecting to game", "game.id", matchOut.UUID)
 	result, err := simpleGameClient.Joined(ctx, &simple.JoinedIn{

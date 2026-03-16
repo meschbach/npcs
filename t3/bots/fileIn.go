@@ -1,8 +1,10 @@
+// Package bots provides AI players for tic-tac-toe games.
 package bots
 
 import (
 	"context"
 	"errors"
+
 	"github.com/meschbach/npcs/t3"
 )
 

@@ -2,19 +2,20 @@ package simple
 
 import (
 	"context"
+	"log/slog"
+	"sync"
+
 	"github.com/meschbach/npcs/competition/wire"
 	"github.com/meschbach/npcs/junk/realnet"
 	"google.golang.org/grpc"
-	"log/slog"
-	"sync"
 )
 
 type RunOnceInstancePhase int
 
 const (
-	RunOnceInstancePhase_init RunOnceInstancePhase = iota
-	RunOnceInstancePhase_started
-	RunOnceInstancePhase_done
+	RunOnceInstancePhaseInit RunOnceInstancePhase = iota
+	RunOnceInstancePhaseStarted
+	RunOnceInstancePhaseDone
 )
 
 type RunOnceInstanceOpt func(*RunOnceInstance)
@@ -30,7 +31,6 @@ type RunOnceInstance struct {
 	orchestration wire.GameEngineOrchestrationClient
 
 	instanceServiceAddress string
-	instanceServiceOptions []grpc.DialOption
 	phase                  RunOnceInstancePhase
 	instance               *GameInstance
 	instanceID             string
@@ -53,7 +53,7 @@ func NewRunOnceInstance(opts ...RunOnceInstanceOpt) *RunOnceInstance {
 	r := &RunOnceInstance{
 		state:   gate,
 		waiters: sync.NewCond(gate),
-		phase:   RunOnceInstancePhase_init,
+		phase:   RunOnceInstancePhaseInit,
 	}
 	for _, o := range opts {
 		o(r)
@@ -113,7 +113,7 @@ func (r *RunOnceInstance) Run(ctx context.Context) error {
 	}
 	r.orchestration = engineOrchestrationClient
 	slog.InfoContext(ctx, "simple game engine started")
-	r.phase = RunOnceInstancePhase_started
+	r.phase = RunOnceInstancePhaseStarted
 	r.waiters.Broadcast()
 	return nil
 }
@@ -121,7 +121,7 @@ func (r *RunOnceInstance) Run(ctx context.Context) error {
 func (r *RunOnceInstance) WaitForStartup() {
 	r.state.Lock()
 	defer r.state.Unlock()
-	for r.phase != RunOnceInstancePhase_started {
+	for r.phase != RunOnceInstancePhaseStarted {
 		r.waiters.Wait()
 	}
 }
@@ -152,6 +152,6 @@ func (r *RunOnceInstance) WaitForCompletion(ctx context.Context) error {
 	r.state.Lock()
 	defer r.state.Unlock()
 
-	r.phase = RunOnceInstancePhase_done
+	r.phase = RunOnceInstancePhaseDone
 	return err
 }

@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
+
 	"github.com/meschbach/npcs/competition"
 	"github.com/meschbach/npcs/junk/proc/tproc"
 	"github.com/meschbach/npcs/junk/realnet"
 	"github.com/spf13/cobra"
 	"github.com/thejerf/suture/v4"
-	"os"
 )
 
 type Daemon struct {
@@ -19,7 +20,7 @@ type Daemon struct {
 	sysOut  <-chan error
 }
 
-func (d *Daemon) Start(init context.Context, run context.Context) error {
+func (d *Daemon) Start(init, run context.Context) error {
 	sysCtx, cancel := context.WithCancel(run)
 	d.sysCtx = sysCtx
 	d.sysDone = cancel

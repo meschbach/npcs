@@ -1,21 +1,23 @@
-package inProc
+package inproc
 
 import (
-	"google.golang.org/grpc/resolver"
 	"sync"
+
+	"google.golang.org/grpc/resolver"
 )
 
 type grpcResolverBuilder struct {
 	state *sync.Mutex
 }
 
+//nolint:gocritic // hugeParam: interface method signature, cannot change
 func (g grpcResolverBuilder) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
 	r := &grpcResolver{
 		target: target,
 		cc:     cc,
 	}
-	r.start()
-	return r, nil
+	err := r.start()
+	return r, err
 }
 
 func (g grpcResolverBuilder) Scheme() string {
@@ -27,12 +29,9 @@ type grpcResolver struct {
 	cc     resolver.ClientConn
 }
 
-func (r *grpcResolver) start() {
-	r.cc.UpdateState(resolver.State{Addresses: []resolver.Address{
-		resolver.Address{
-			Addr:       r.target.URL.Host,
-			ServerName: r.target.URL.Host,
-		},
+func (r *grpcResolver) start() error {
+	return r.cc.UpdateState(resolver.State{Addresses: []resolver.Address{
+		{Addr: r.target.URL.Host, ServerName: r.target.URL.Host},
 	}})
 }
 

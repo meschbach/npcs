@@ -1,3 +1,4 @@
+// Package competition implements a multiplayer game competition system.
 package competition
 
 import "context"
