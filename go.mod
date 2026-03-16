@@ -1,6 +1,7 @@
 module github.com/meschbach/npcs
 
 go 1.25
+
 toolchain go1.26
 
 require (
