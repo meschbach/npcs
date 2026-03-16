@@ -10,6 +10,10 @@ services:
       - "11234"
     environment:
       - "ENV=dev-compose"
+    networks:
+      - dc1
+      - platform
+
   simple:
     build:
       context: .
@@ -28,6 +32,10 @@ services:
       - "ENV=dev-compose"
     depends_on:
       - competition
+    networks:
+      - dc1
+      - platform
+
   player_1:
     build:
       context: .
@@ -40,6 +48,10 @@ services:
       - "ENV=dev-compose"
     depends_on:
       - simple
+    networks:
+      - dc1
+      - platform
+
   player_2:
     build:
       context: .
@@ -53,3 +65,14 @@ services:
     depends_on:
       - competition
       - simple
+    networks:
+      - dc1
+      - platform
+
+networks:
+  dc1:
+    name: npcs_dc1_internal
+    external: true
+  platform:
+    name: npcs_platform
+    external: true

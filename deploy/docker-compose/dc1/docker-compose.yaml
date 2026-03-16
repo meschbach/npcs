@@ -1,0 +1,31 @@
+services:
+  pg_primary:
+    image: postgres:18
+    restart: always
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password1234
+    ports:
+      - "16004:5432"
+    volumes:
+      - pg_primary_data:/var/lib/postgresql/18/docker
+      - ./pg/setup.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: pg_isready -U primary_dc1_user -d primary_dc1_db
+      interval: 30s
+      timeout: 1s
+      retries: 3
+      start_interval: 1s
+      start_period: 5s
+    networks:
+      - internal
+
+volumes:
+  pg_primary_data:
+
+networks:
+  internal:
+    labels:
+      com.meschbach/version: 5
+      com.meschbach/project: npcs_dc1
