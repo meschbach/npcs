@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Setup Go
@@ -48,18 +48,22 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      matrix:
+        go-version: [ '1.25', '1.26' ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
-          go-version: '1.26'
+          go-version: "${{ matrix.go-version }}"
       - name: Run integration tests and system tests
         run: |
           go test -v -timeout 60s ./...
           ./dev.sh compose
+
 
   release_tag:
     runs-on: ubuntu-latest
@@ -77,7 +81,7 @@ jobs:
       - build
       - test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.merge_commit_sha }}
       - name: Bump version and push tag
@@ -101,7 +105,7 @@ jobs:
     needs:
       - release_tag
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ needs.release_tag.outputs.tag_version }}
           fetch-depth: 0
@@ -109,10 +113,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Setup Go 1.24
-        uses: actions/setup-go@v5
+      - name: Setup Go 1.26
+        uses: actions/setup-go@v6
         with:
-          go-version: 1.24
+          go-version: 1.26
 
       - name: Build Go Artifacts
         run: |
