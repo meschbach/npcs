@@ -49,6 +49,7 @@ mkdir -p bin
 compile cmd/competition competition
 compile cmd/simple simple
 compile cmd/simpled simpled
+compile cmd/t3 t3
 
 echo "All programs compiled."
 
